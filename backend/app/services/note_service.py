@@ -17,7 +17,9 @@ def create_note(
     if note_data.tag_ids:
         tags = list(
             db.scalars(
-                select(Tag).where(Tag.id.in_(note_data.tag_ids))
+                select(Tag).where(
+                    Tag.id.in_(note_data.tag_ids),
+                    Tag.user_id == user_id,)
             ).all()
         )
 
@@ -95,7 +97,7 @@ def update_note(
             tags = list(
                 db.scalars(
                     select(Tag).where(
-                        Tag.id.in_(note_data.tag_ids)
+                        Tag.id.in_(note_data.tag_ids),
                         Tag.user_id == user_id,
                     )
                 ).all()

@@ -9,17 +9,22 @@ def create_tag(
     tag_data: TagCreate,
     user_id: int,
 ) -> Tag:
+    tag_name = tag_data.name.strip()
+
     existing_tag = db.scalar(
         select(Tag).where(
-            Tag.name == tag_data.name,
+            Tag.name == tag_name,
             Tag.user_id == user_id,
-            )
+        )
     )
 
     if existing_tag:
         raise ValueError("Tag already exists")
 
-    tag = Tag(name=tag_data.name)
+    tag = Tag(
+    user_id=user_id,
+    name=tag_data.name.strip(),
+)
 
     db.add(tag)
     db.commit()
@@ -61,7 +66,11 @@ def update_tag(
         return None
 
     existing_tag = db.scalar(
-        select(Tag).where(Tag.name == tag_name, Tag.id != tag_id)
+        select(Tag).where(
+            Tag.name == tag_name,
+            Tag.user_id == user_id,
+            Tag.id != tag_id,
+        )
     )
 
     if existing_tag:

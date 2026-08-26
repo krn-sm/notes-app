@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models import User, RevokedToken
-from app.schemas.auth import UserCreate
+from app.schemas.auth import UserCreate, UserUpdate
 from app.auth.security import hash_password, verify_password, ALGORITHM, SECRET_KEY
 from sqlalchemy import delete, select
 from datetime import datetime, timezone
@@ -48,6 +48,20 @@ def authenticate_user(
         return existing_user
 
     return None
+
+
+def update_user(
+    db: Session,
+    user: User,
+    user_data: UserUpdate,
+) -> User:
+
+    user.name = user_data.name.strip()
+
+    db.commit()
+    db.refresh(user)
+
+    return user
 
 
 def revoke_token(
