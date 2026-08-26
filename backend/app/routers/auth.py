@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Cookie, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -18,12 +18,8 @@ from app.schemas.auth import (
     UserCreate,
     UserUpdate,
     UserResponse,
-    Token,
     LoginRequest,
 )
-
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-security = HTTPBearer()
 
 router = APIRouter(
     prefix="/api/auth",
@@ -65,10 +61,10 @@ def update_user_endpoint(
 
 
 @router.post("/login",
-    response_model=Token,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_204_NO_CONTENT
 )
 def login_user_endpoint(
+    response: Response,
     user_data: LoginRequest,
     db: Session = Depends(get_db)
 ):
@@ -80,16 +76,33 @@ def login_user_endpoint(
         )
     access_token = create_access_token(user.id)
 
-    return Token(access_token=access_token, token_type="bearer")
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=900,
+    )
+
+    return None
 
 
-@router.post("/logout",status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT
+)
 def logout_user_endpoint(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    response: Response,
+    access_token: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
 ):
-    token = credentials.credentials
-    cleanup_revoked_tokens(db)
-    revoke_token(db, token)
+    if access_token is not None:
+        cleanup_revoked_tokens(db)
+        revoke_token(db, access_token)
+
+    response.delete_cookie(
+        key="access_token",
+    )
 
     return None

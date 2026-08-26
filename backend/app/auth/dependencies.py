@@ -1,24 +1,25 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.models import User, RevokedToken
-from fastapi import Depends, HTTPException, status
-from fastapi.security import  HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Cookie, Depends, HTTPException, status
 import jwt
 from app.auth.security import ALGORITHM, SECRET_KEY
 from app.database import get_db
 
 
-security = HTTPBearer()
-
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
 ) -> User:
     
-    token = credentials.credentials
+    if access_token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
     
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         jti = payload.get("jti")
 
@@ -44,6 +45,7 @@ def get_current_user(
         )
 
     user = db.get(User, int(user_id))
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
