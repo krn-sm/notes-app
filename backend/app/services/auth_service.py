@@ -1,35 +1,45 @@
-from sqlalchemy.orm import Session
-from app.models import User, RevokedToken
-from app.schemas.auth import UserCreate, UserUpdate
-from app.auth.security import hash_password, verify_password, ALGORITHM, SECRET_KEY
-from sqlalchemy import delete, select
 from datetime import datetime, timezone
 import jwt
+from sqlalchemy.orm import Session
+
+from app.auth.security import (
+    ALGORITHM,
+    SECRET_KEY,
+    hash_password,
+    verify_password,
+)
+from app.models import RevokedToken, User
+from app.repositories import auth_repository
+from app.schemas.auth import UserCreate, UserUpdate
+
 
 def create_user(
     db: Session,
     user_data: UserCreate,
 ) -> User:
-    
-    existing_user = db.scalar(
-        select(User).where(User.email == user_data.email)
+
+    existing_user = auth_repository.get_user_by_email(
+        db,
+        user_data.email,
     )
 
     if existing_user:
         raise ValueError("Email already registered")
-    
-    hashed_password = hash_password(user_data.password)
+
+    hashed_password = hash_password(
+        user_data.password
+    )
+
     user = User(
         name=user_data.name,
         email=user_data.email,
         hashed_password=hashed_password,
     )
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-
-    return user
+    return auth_repository.create_user(
+        db,
+        user,
+    )
 
 
 def authenticate_user(
@@ -37,15 +47,17 @@ def authenticate_user(
     email: str,
     password: str,
 ) -> User | None:
-    
-    existing_user = db.scalar(
-        select(User).where(User.email == email)
+
+    user = auth_repository.get_user_by_email(
+        db,
+        email,
     )
-    if existing_user and verify_password(
-    password,
-    existing_user.hashed_password,
+
+    if user and verify_password(
+        password,
+        user.hashed_password,
     ):
-        return existing_user
+        return user
 
     return None
 
@@ -58,17 +70,17 @@ def update_user(
 
     user.name = user_data.name.strip()
 
-    db.commit()
-    db.refresh(user)
-
-    return user
+    return auth_repository.update_user(
+        db,
+        user,
+    )
 
 
 def revoke_token(
     db: Session,
     token: str,
 ) -> None:
-        
+
     payload = jwt.decode(
         token,
         SECRET_KEY,
@@ -83,17 +95,23 @@ def revoke_token(
 
     revoked_token = RevokedToken(
         jti=jti,
-        expires_at=datetime.fromtimestamp(exp, tz=timezone.utc),
+        expires_at=datetime.fromtimestamp(
+            exp,
+            tz=timezone.utc,
+        ),
     )
 
-    db.add(revoked_token)
-    db.commit()
-
-
-def cleanup_revoked_tokens(db: Session) -> None:
-    db.execute(
-        delete(RevokedToken).where(
-            RevokedToken.expires_at < datetime.now(timezone.utc)
-        )
+    auth_repository.create_revoked_token(
+        db,
+        revoked_token,
     )
-    db.commit()
+
+
+def cleanup_revoked_tokens(
+    db: Session,
+) -> None:
+
+    auth_repository.cleanup_revoked_tokens(
+        db,
+        datetime.now(timezone.utc),
+    )

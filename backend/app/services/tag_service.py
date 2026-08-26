@@ -1,7 +1,8 @@
-from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from app.models import Tag
 from app.schemas.tag import TagCreate, TagUpdate
+from app.repositories import tag_repository
 
 
 def create_tag(
@@ -9,41 +10,38 @@ def create_tag(
     tag_data: TagCreate,
     user_id: int,
 ) -> Tag:
+
     tag_name = tag_data.name.strip()
 
-    existing_tag = db.scalar(
-        select(Tag).where(
-            Tag.name == tag_name,
-            Tag.user_id == user_id,
-        )
+    existing_tag = tag_repository.get_tag_by_name(
+        db,
+        tag_name,
+        user_id,
     )
 
     if existing_tag:
         raise ValueError("Tag already exists")
 
     tag = Tag(
-    user_id=user_id,
-    name=tag_data.name.strip(),
-)
+        user_id=user_id,
+        name=tag_name,
+    )
 
-    db.add(tag)
-    db.commit()
-    db.refresh(tag)
-
-    return tag
+    return tag_repository.create_tag(
+        db,
+        tag,
+    )
 
 
 def get_tags(
     db: Session,
-    user_id: int
+    user_id: int,
 ) -> list[Tag]:
-    statement = (
-    select(Tag)
-    .where(Tag.user_id == user_id)
-    .order_by(Tag.name.asc())
-)
 
-    return list(db.scalars(statement).all())
+    return tag_repository.get_tags(
+        db,
+        user_id,
+    )
 
 
 def update_tag(
@@ -52,53 +50,55 @@ def update_tag(
     tag_data: TagUpdate,
     user_id: int,
 ) -> Tag | None:
-    
-    statement = (
-        select(Tag).where(
-    Tag.id == tag_id,
-    Tag.user_id == user_id,
-)
-)   
-    tag_name = tag_data.name.strip()
-    tag = db.scalars(statement).first()
+
+    tag = tag_repository.get_tag(
+        db,
+        tag_id,
+        user_id,
+    )
 
     if tag is None:
         return None
 
-    existing_tag = db.scalar(
-        select(Tag).where(
-            Tag.name == tag_name,
-            Tag.user_id == user_id,
-            Tag.id != tag_id,
-        )
+    tag_name = tag_data.name.strip()
+
+    existing_tag = tag_repository.get_tag_by_name(
+        db,
+        tag_name,
+        user_id,
     )
 
-    if existing_tag:
-        raise ValueError("Tag with this name already exists")
+    if existing_tag and existing_tag.id != tag_id:
+        raise ValueError(
+            "Tag with this name already exists"
+        )
 
-    tag.name = tag_data.name
-    db.commit()
-    db.refresh(tag)
+    tag.name = tag_name
 
-    return tag
+    return tag_repository.update_tag(
+        db,
+        tag,
+    )
 
 
 def delete_tag(
     db: Session,
     tag_id: int,
-    user_id: int
+    user_id: int,
 ) -> bool:
-    
-    statement = select(Tag).where(
-    Tag.id == tag_id,
-    Tag.user_id == user_id,
-)
-    tag = db.scalars(statement).first()
+
+    tag = tag_repository.get_tag(
+        db,
+        tag_id,
+        user_id,
+    )
 
     if tag is None:
         return False
-    
-    db.delete(tag)
-    db.commit()
+
+    tag_repository.delete_tag(
+        db,
+        tag,
+    )
 
     return True

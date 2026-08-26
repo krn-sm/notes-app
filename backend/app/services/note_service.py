@@ -1,13 +1,16 @@
-from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
-from app.models import Note, Tag
+
+from app.models import Note
 from app.schemas.note import NoteCreate, NoteUpdate
+from app.repositories import note_repository
+
 
 def create_note(
     db: Session,
     note_data: NoteCreate,
     user_id: int,
 ) -> Note:
+
     note = Note(
         user_id=user_id,
         title=note_data.title,
@@ -15,37 +18,34 @@ def create_note(
     )
 
     if note_data.tag_ids:
-        tags = list(
-            db.scalars(
-                select(Tag).where(
-                    Tag.id.in_(note_data.tag_ids),
-                    Tag.user_id == user_id,)
-            ).all()
+        tags = note_repository.get_tags_by_ids(
+            db,
+            note_data.tag_ids,
+            user_id,
         )
 
         if len(tags) != len(set(note_data.tag_ids)):
-            raise ValueError("One or more tag IDs do not exist")
+            raise ValueError(
+                "One or more tag IDs do not exist"
+            )
 
         note.tags = tags
 
-    db.add(note)
-    db.commit()
-    db.refresh(note)
-
-    return note
+    return note_repository.create_note(
+        db,
+        note,
+    )
 
 
 def get_notes(
     db: Session,
     user_id: int,
 ) -> list[Note]:
-    statement = (
-        select(Note)
-        .where(Note.user_id == user_id)
-        .order_by(Note.updated_at.desc())
-    )
 
-    return list(db.scalars(statement).all())
+    return note_repository.get_notes(
+        db,
+        user_id,
+    )
 
 
 def get_note(
@@ -54,15 +54,11 @@ def get_note(
     user_id: int,
 ) -> Note | None:
 
-    statement = (
-        select(Note)
-        .where(
-            Note.user_id == user_id,
-            Note.id == note_id,
-        )
+    return note_repository.get_note(
+        db,
+        note_id,
+        user_id,
     )
-
-    return db.scalars(statement).first()
 
 
 def update_note(
@@ -71,16 +67,12 @@ def update_note(
     user_id: int,
     note_data: NoteUpdate,
 ) -> Note | None:
-    
-    statement = (
-    select(Note)
-    .where(
-        Note.id == note_id,
-        Note.user_id == user_id,
-        )
-    )
 
-    note = db.scalars(statement).first()
+    note = note_repository.get_note(
+        db,
+        note_id,
+        user_id,
+    )
 
     if note is None:
         return None
@@ -94,13 +86,10 @@ def update_note(
     if note_data.tag_ids is not None:
 
         if note_data.tag_ids:
-            tags = list(
-                db.scalars(
-                    select(Tag).where(
-                        Tag.id.in_(note_data.tag_ids),
-                        Tag.user_id == user_id,
-                    )
-                ).all()
+            tags = note_repository.get_tags_by_ids(
+                db,
+                note_data.tag_ids,
+                user_id,
             )
 
             if len(tags) != len(set(note_data.tag_ids)):
@@ -113,10 +102,10 @@ def update_note(
         else:
             note.tags = []
 
-    db.commit()
-    db.refresh(note)
-
-    return note
+    return note_repository.update_note(
+        db,
+        note,
+    )
 
 
 def search_notes(
@@ -124,22 +113,12 @@ def search_notes(
     user_id: int,
     query: str,
 ) -> list[Note]:
-    
-    search_term = f"%{query.strip()}%"
 
-    statement = (
-        select(Note)
-        .where(
-            Note.user_id == user_id,
-            or_(
-                Note.title.ilike(search_term),
-                Note.content.ilike(search_term),
-            )
-        )
-        .order_by(Note.updated_at.desc())
+    return note_repository.search_notes(
+        db,
+        user_id,
+        query,
     )
-
-    return list(db.scalars(statement).all())
 
 
 def delete_note(
@@ -147,21 +126,19 @@ def delete_note(
     note_id: int,
     user_id: int,
 ) -> bool:
-    
-    statement = (
-    select(Note)
-    .where(
-        Note.id == note_id,
-        Note.user_id == user_id,
-        )
-    )
 
-    note = db.scalars(statement).first()
+    note = note_repository.get_note(
+        db,
+        note_id,
+        user_id,
+    )
 
     if note is None:
         return False
 
-    db.delete(note)
-    db.commit()
+    note_repository.delete_note(
+        db,
+        note,
+    )
 
     return True

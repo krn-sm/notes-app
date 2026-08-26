@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+
 from app.database import get_db
-from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from app.models import User
 from app.auth.dependencies import get_current_user
-
 from app.schemas.note import (
     NoteCreate,
     NoteResponse,

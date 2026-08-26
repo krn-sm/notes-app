@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-from app.models import User, RevokedToken
 from fastapi import Cookie, Depends, HTTPException, status
 import jwt
+from sqlalchemy.orm import Session
+
+from app.models import User
 from app.auth.security import ALGORITHM, SECRET_KEY
 from app.database import get_db
+from app.repositories import auth_repository
 
 
 def get_current_user(
@@ -23,8 +24,9 @@ def get_current_user(
         user_id = payload.get("sub")
         jti = payload.get("jti")
 
-        revoked_token = db.scalar(
-            select(RevokedToken).where(RevokedToken.jti == jti)
+        revoked_token = auth_repository.get_revoked_token(
+            db,
+            jti,
         )
 
         if revoked_token:
