@@ -1,31 +1,58 @@
 import { createBrowserRouter } from "react-router-dom"
 
-import MainLayout from "../layouts/MainLayout"
+import AppLayout from "../layouts/AppLayout"
+import DashboardLayout from "../layouts/DashboardLayout"
 
-import LoginPage from "../pages/LoginPage"
-import RegisterPage from "../pages/RegisterPage"
 import HomePage from "../pages/HomePage"
+import LoginPage from "../pages/LoginPage"
+import NoteDetailPage from "../pages/NoteDetailPage"
 import NotFoundPage from "../pages/NotFoundPage"
+import RegisterPage from "../pages/RegisterPage"
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: <AppLayout />,
     children: [
       {
-        index: true,
-        element: <HomePage />,
+        element: <DashboardLayout />,
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+          },
+          // {
+          //   path: "favorites",
+          //   element: <FavoritesPage />,
+          // },
+          // {
+          //   path: "trash",
+          //   element: <TrashPage />,
+          // },
+          // {
+          //   path: "category/:categoryName",
+          //   element: <CategoryPage />,
+          // },
+        ],
+      },
+
+      {
+        path: "note/:noteId",
+        element: <NoteDetailPage />,
       },
     ],
   },
+
   {
     path: "/login",
     element: <LoginPage />,
   },
+
   {
     path: "/register",
     element: <RegisterPage />,
   },
+
   {
     path: "*",
     element: <NotFoundPage />,
