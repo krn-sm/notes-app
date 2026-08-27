@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@theme {
+  --color-ink: #1f1b16;
+  --color-paper: #f5f0e6;
+  --color-paper-dark: #e8dfcf;
+  --color-leather: #6f4e37;
+  --color-leather-dark: #4a3022;
+  --color-muted: #756b5e;
+
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-body: "Segoe UI", sans-serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
