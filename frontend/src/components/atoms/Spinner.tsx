@@ -12,8 +12,8 @@ const Spinner = ({ className = "" }: SpinnerProps) => {
         animate-spin
         rounded-full
         border-2
-        border-stone-300
-        border-t-amber-700
+        border-line
+        border-t-gold
         ${className}
       `}
     />

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss";
 
 @theme {
   --color-ink: #1f1b16;
@@ -23,4 +23,40 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
+} */
+
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f5f0e6;
+  --color-paper-dark: #e8dfd0;
+
+  --color-ink: #2d241c;
+  --color-ink-muted: #756b60;
+
+  --color-leather: #2a1d16;
+  --color-leather-light: #45342a;
+
+  --color-gold: #c8954b;
+  --color-gold-light: #e6c47f;
+
+  --color-line: #d8cfc0;
+}
+
+html {
+  background-color: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
 }

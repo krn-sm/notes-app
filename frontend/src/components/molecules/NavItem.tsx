@@ -3,30 +3,68 @@ import { NavLink } from "react-router-dom"
 type NavItemProps = {
   to: string
   children: React.ReactNode
+  icon?: React.ReactNode
+  end?: boolean
 }
 
-const NavItem = ({ to, children }: NavItemProps) => {
+const NavItem = ({
+  to,
+  children,
+  icon,
+  end = false,
+}: NavItemProps) => {
   return (
     <NavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         `
+          group
           flex
           items-center
-          rounded-md
-          px-3
-          py-2
-          text-sm
-          transition
+          gap-3
+          rounded-lg
+          px-4
+          py-3
+          text-[15px]
+          transition-all
+          duration-200
+
           ${
             isActive
-              ? "bg-amber-100 text-amber-900"
-              : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+              ? `
+                bg-[#4a382d]
+                text-paper
+                shadow-sm
+              `
+              : `
+                text-paper/75
+                hover:bg-[#3b2b22]
+                hover:text-paper
+              `
           }
         `
       }
     >
-      {children}
+      {icon && (
+        <span
+          className="
+            flex
+            h-5
+            w-5
+            shrink-0
+            items-center
+            justify-center
+            text-paper/70
+            transition-colors
+            group-hover:text-paper
+          "
+        >
+          {icon}
+        </span>
+      )}
+
+      <span>{children}</span>
     </NavLink>
   )
 }

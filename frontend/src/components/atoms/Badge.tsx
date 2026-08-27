@@ -11,13 +11,13 @@ const Badge = ({ children, className = "" }: BadgeProps) => {
         items-center
         rounded-full
         border
-        border-stone-300
-        bg-stone-100
+        border-line
+        bg-paper-dark
         px-3
         py-1
         text-xs
         font-medium
-        text-stone-600
+        text-ink-muted
         ${className}
       `}
     >

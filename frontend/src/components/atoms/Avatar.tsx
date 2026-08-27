@@ -27,11 +27,11 @@ const Avatar = ({
         overflow-hidden
         rounded-full
         border
-        border-stone-300
-        bg-amber-100
+        border-line
+        bg-paper-dark
         text-sm
         font-semibold
-        text-amber-800
+        text-ink
         ${className}
       `}
     >
