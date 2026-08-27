@@ -5,6 +5,7 @@ type NavItemProps = {
   children: React.ReactNode
   icon?: React.ReactNode
   end?: boolean
+  collapsed?: boolean
 }
 
 const NavItem = ({
@@ -12,20 +13,22 @@ const NavItem = ({
   children,
   icon,
   end = false,
+  collapsed = false,
 }: NavItemProps) => {
   return (
     <NavLink
       to={to}
       end={end}
+      title={collapsed ? String(children) : undefined}
       className={({ isActive }) =>
         `
           group
           flex
           items-center
-          gap-3
-          rounded-lg
-          px-4
+          ${collapsed ? "justify-center px-0" : "gap-3 px-4"}
+          rounded-xl
           py-3
+          font-body
           text-[15px]
           transition-all
           duration-200
@@ -64,7 +67,11 @@ const NavItem = ({
         </span>
       )}
 
-      <span>{children}</span>
+      {!collapsed && (
+        <span className="whitespace-nowrap">
+          {children}
+        </span>
+      )}
     </NavLink>
   )
 }

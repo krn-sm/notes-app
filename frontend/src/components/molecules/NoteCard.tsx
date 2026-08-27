@@ -23,15 +23,37 @@ const NoteCard = ({
         hover:shadow-md
       "
     >
-      <p className="text-xs text-ink-muted">
+      <p
+        className="
+          font-body
+          text-xs
+          text-ink-muted
+        "
+      >
         {date}
       </p>
 
-      <h2 className="mt-2 font-serif text-xl text-ink">
+      <h2
+        className="
+          mt-2
+          font-display
+          text-2xl
+          font-semibold
+          text-ink
+        "
+      >
         {title}
       </h2>
 
-      <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+      <p
+        className="
+          mt-2
+          font-body
+          text-sm
+          leading-relaxed
+          text-ink-muted
+        "
+      >
         {preview}
       </p>
     </article>

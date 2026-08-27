@@ -29,6 +29,7 @@ const Avatar = ({
         border
         border-line
         bg-paper-dark
+        font-body
         text-sm
         font-semibold
         text-ink

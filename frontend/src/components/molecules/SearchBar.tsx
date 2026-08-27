@@ -10,7 +10,7 @@ const SearchBar = ({
   onChange,
 }: SearchBarProps) => {
   return (
-    <div className="w-full">
+    <div className="w-full font-body">
       <Input
         type="search"
         placeholder="Search your notes..."

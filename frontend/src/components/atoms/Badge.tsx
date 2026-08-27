@@ -15,6 +15,7 @@ const Badge = ({ children, className = "" }: BadgeProps) => {
         bg-paper-dark
         px-3
         py-1
+        font-body
         text-xs
         font-medium
         text-ink-muted

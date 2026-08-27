@@ -10,6 +10,7 @@ const Input = ({ className = "", ...props }: InputProps) => {
         bg-transparent
         px-1
         py-3
+        font-body
         text-ink
         outline-none
         placeholder:text-ink-muted

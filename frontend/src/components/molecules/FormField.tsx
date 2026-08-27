@@ -1,19 +1,26 @@
 import Input from "../atoms/Input"
 
 type FormFieldProps = {
-    label: string
-    error?: string
+  label: string
+  error?: string
 } & React.InputHTMLAttributes<HTMLInputElement>
 
 const FormField = ({
-    label,
-    error,
-    className = "",
-    ...props
+  label,
+  error,
+  className = "",
+  ...props
 }: FormFieldProps) => {
-    return (
+  return (
     <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-stone-700">
+      <label
+        className="
+          font-body
+          text-sm
+          font-medium
+          text-ink
+        "
+      >
         {label}
       </label>
 
@@ -23,7 +30,13 @@ const FormField = ({
       />
 
       {error && (
-        <p className="text-xs text-red-600">
+        <p
+          className="
+            font-body
+            text-xs
+            text-red-600
+          "
+        >
           {error}
         </p>
       )}
