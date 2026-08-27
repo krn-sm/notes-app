@@ -14,11 +14,19 @@ const Sidebar = () => {
         </Button>
       </div>
 
-      <nav className="mt-8 space-y-2">
-        <NavItem label="All Notes" />
-        <NavItem label="Favorites" />
-        <NavItem label="Trash" />
-      </nav>
+     <nav className="mt-8 space-y-2">
+  <NavItem to="/">
+    All Notes
+  </NavItem>
+
+  <NavItem to="/favorites">
+    Favorites
+  </NavItem>
+
+  <NavItem to="/trash">
+    Trash
+  </NavItem>
+</nav>
     </aside>
   )
 }
