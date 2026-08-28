@@ -1,12 +1,8 @@
-import {
-  ChevronDown,
-  Grid2X2,
-  List,
-} from "lucide-react"
+import { Grid2X2, List } from "lucide-react";
 
-import Avatar from "../atoms/Avatar"
-import Button from "../atoms/Button"
-import SearchBar from "../molecules/SearchBar"
+import Avatar from "../atoms/Avatar";
+import Button from "../atoms/Button";
+import SearchBar from "../molecules/SearchBar";
 
 const AppHeader = () => {
   return (
@@ -51,10 +47,7 @@ const AppHeader = () => {
 
       {/* Search */}
       <div className="w-full max-w-[300px]">
-        <SearchBar
-          value=""
-          onChange={() => {}}
-        />
+        <SearchBar value="" onChange={() => {}} />
       </div>
 
       {/* Header Actions */}
@@ -104,35 +97,32 @@ const AppHeader = () => {
           </Button>
         </div>
 
-        {/* User Menu */}
+        {/* User Profile */}
         <Button
           variant="ghost"
           className="
-            group
             gap-3
+            !rounded-xl
             !px-2
-            !py-1
+            !py-1.5
           "
         >
-          <Avatar name="Kiran S M" />
+          <Avatar name="Jack Sparrow" />
 
-          <span className="text-sm font-medium text-ink">
-            Kiran
-          </span>
-
-          <ChevronDown
-            size={16}
-            strokeWidth={1.8}
+          <span
             className="
-              text-ink-muted
-              transition-transform
-              group-hover:translate-y-[1px]
-            "
-          />
+            font-body
+            text-sm
+            font-medium
+            text-ink
+          "
+          >
+            Jack Sparrow
+          </span>
         </Button>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default AppHeader
+export default AppHeader;

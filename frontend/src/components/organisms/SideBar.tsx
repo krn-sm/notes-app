@@ -4,46 +4,45 @@ import {
   ListTodo,
   Plus,
   Star,
-  Tag,
   Trash2,
-} from "lucide-react";
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+} from "lucide-react"
+import { useState } from "react"
 
-import Button from "../atoms/Button";
-import Brand from "../molecules/Brand";
-import NavItem from "../molecules/NavItem";
+import Button from "../atoms/Button"
+import Brand from "../molecules/Brand"
+import CategoryNavItem from "../molecules/CategoryNavItem"
+import NavItem from "../molecules/NavItem"
 
 const categories = [
   {
     name: "Personal",
     count: 8,
-    path: "/category/personal",
+    path: "/home/category/personal",
   },
   {
     name: "Work",
     count: 6,
-    path: "/category/work",
+    path: "/home/category/work",
   },
   {
     name: "Ideas",
     count: 4,
-    path: "/category/ideas",
+    path: "/home/category/ideas",
   },
   {
     name: "Study",
     count: 5,
-    path: "/category/study",
+    path: "/home/category/study",
   },
   {
     name: "Projects",
     count: 3,
-    path: "/category/projects",
+    path: "/home/category/projects",
   },
-];
+]
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
     <aside
@@ -62,7 +61,6 @@ const Sidebar = () => {
         transition-[width,padding]
         duration-300
         ease-in-out
-
         ${collapsed ? "w-[88px] px-4" : "w-[300px] px-5"}
       `}
     >
@@ -95,7 +93,6 @@ const Sidebar = () => {
       </Button>
 
       {/* Brand */}
-
       <Brand collapsed={collapsed} />
 
       {/* New Note */}
@@ -125,7 +122,7 @@ const Sidebar = () => {
       {/* Navigation */}
       <nav className="mt-6 space-y-1">
         <NavItem
-          to="/"
+          to="/home"
           end
           collapsed={collapsed}
           icon={<ListTodo size={19} strokeWidth={1.7} />}
@@ -134,7 +131,7 @@ const Sidebar = () => {
         </NavItem>
 
         <NavItem
-          to="/favorites"
+          to="/home/favorites"
           collapsed={collapsed}
           icon={<Star size={19} strokeWidth={1.7} />}
         >
@@ -142,7 +139,7 @@ const Sidebar = () => {
         </NavItem>
 
         <NavItem
-          to="/trash"
+          to="/home/trash"
           collapsed={collapsed}
           icon={<Trash2 size={19} strokeWidth={1.7} />}
         >
@@ -175,73 +172,18 @@ const Sidebar = () => {
           `}
         >
           {categories.map((category) => (
-            <NavLink
+            <CategoryNavItem
               key={category.name}
-              to={category.path}
-              title={collapsed ? category.name : undefined}
-              className={({ isActive }) =>
-                `
-                  group
-                  flex
-                  h-11
-                  w-full
-                  items-center
-                  rounded-xl
-                  font-body
-                  transition-all
-                  duration-200
-
-                  ${collapsed ? "justify-center" : "justify-between px-3"}
-
-                  ${
-                    isActive
-                      ? "bg-leather-light text-paper"
-                      : "text-paper/80 hover:bg-[#3b2b22] hover:text-paper"
-                  }
-                `
-              }
-            >
-              <div
-                className={`
-                  flex
-                  items-center
-                  ${collapsed ? "justify-center" : "gap-4"}
-                `}
-              >
-                <Tag
-                  size={20}
-                  strokeWidth={1.7}
-                  className="
-                    shrink-0
-                    text-paper/70
-                    transition
-                    group-hover:text-paper
-                  "
-                />
-
-                {!collapsed && (
-                  <span className="text-[15px]">{category.name}</span>
-                )}
-              </div>
-
-              {!collapsed && (
-                <span
-                  className="
-                    ml-4
-                    shrink-0
-                    text-sm
-                    text-gold-light
-                  "
-                >
-                  {category.count}
-                </span>
-              )}
-            </NavLink>
+              name={category.name}
+              count={category.count}
+              path={category.path}
+              collapsed={collapsed}
+            />
           ))}
         </div>
       </section>
     </aside>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar
