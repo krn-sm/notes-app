@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 import Toast from "../components/molecules/Toast";
 import AppHeader from "../components/organisms/AppHeader";
-import ProfileDrawer from "../components/organisms/ProfileDrawer";
+import ProfileDrawer from "../components/organisms/ProfileDrawer/ProfileDrawer";
 import SideBar from "../components/organisms/SideBar";
 
 import { getCurrentUser, type User } from "../services/authService";
