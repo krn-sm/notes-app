@@ -1,3 +1,5 @@
+import { Search } from "lucide-react"
+
 import Input from "../atoms/Input"
 
 type SearchBarProps = {
@@ -10,13 +12,61 @@ const SearchBar = ({
   onChange,
 }: SearchBarProps) => {
   return (
-    <div className="w-full font-body">
+    <div
+      className="
+        flex
+        h-11
+        w-full
+        items-center
+        rounded-xl
+        border
+        border-line
+        bg-paper-dark/40
+        px-4
+        transition-colors
+        focus-within:border-gold
+      "
+    >
+      <Search
+        size={18}
+        strokeWidth={1.8}
+        className="mr-3 shrink-0 text-ink-muted"
+      />
+
       <Input
         type="search"
-        placeholder="Search your notes..."
+        placeholder="Search notes..."
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        className="
+          h-full
+          min-w-0
+          px-0
+          py-0
+          text-sm
+        "
       />
+
+      <kbd
+        className="
+          ml-3
+          flex
+          h-6
+          w-6
+          shrink-0
+          items-center
+          justify-center
+          rounded-md
+          border
+          border-line
+          bg-paper
+          font-body
+          text-xs
+          text-ink-muted
+        "
+      >
+        /
+      </kbd>
     </div>
   )
 }

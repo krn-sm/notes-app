@@ -1,24 +1,138 @@
-import Avatar from "../atoms/Avatar";
-import SearchBar from "../molecules/SearchBar";
+import {
+  ChevronDown,
+  Grid2X2,
+  List,
+} from "lucide-react"
 
-const NavBar = () => {
+import Avatar from "../atoms/Avatar"
+import Button from "../atoms/Button"
+import SearchBar from "../molecules/SearchBar"
+
+const AppHeader = () => {
   return (
-    <header className="flex items-center justify-between border-b border-stone-200 px-8 py-5">
-      <div>
-        <h1 className="font-serif text-2xl text-stone-900">
-          Good morning, Kiran 👋
+    <header
+      className="
+        flex
+        h-[112px]
+        shrink-0
+        items-center
+        justify-between
+        border-b
+        border-line
+        bg-paper
+        px-7
+      "
+    >
+      {/* Greeting Section */}
+      <div className="min-w-[260px]">
+        <h1
+          className="
+            font-display
+            text-[20px]
+            font-medium
+            text-ink
+          "
+        >
+          Good morning, Kiran
+          <span className="ml-2 text-gold">☀</span>
         </h1>
 
-        <p className="mt-1 text-sm text-stone-500">You have 23 notes</p>
+        <p
+          className="
+            mt-2
+            font-body
+            text-sm
+            text-ink-muted
+          "
+        >
+          You have 23 notes
+        </p>
       </div>
 
-      <div className="flex items-center gap-6">
-        <SearchBar value="" onChange={() => {}} />
+      {/* Search */}
+      <div className="w-full max-w-[300px]">
+        <SearchBar
+          value=""
+          onChange={() => {}}
+        />
+      </div>
 
-        <Avatar name="Kiran" />
+      {/* Header Actions */}
+      <div className="flex min-w-[260px] items-center justify-end gap-6">
+        {/* View Toggle */}
+        <div
+          className="
+            flex
+            h-11
+            overflow-hidden
+            rounded-xl
+            border
+            border-line
+            bg-paper-dark
+          "
+        >
+          <Button
+            variant="ghost"
+            aria-label="List view"
+            className="
+              h-full
+              w-11
+              !rounded-none
+              !px-0
+              !py-0
+              border-r
+              border-line
+              !bg-paper
+              !text-ink
+            "
+          >
+            <List size={19} strokeWidth={1.8} />
+          </Button>
+
+          <Button
+            variant="ghost"
+            aria-label="Grid view"
+            className="
+              h-full
+              w-11
+              !rounded-none
+              !px-0
+              !py-0
+            "
+          >
+            <Grid2X2 size={18} strokeWidth={1.7} />
+          </Button>
+        </div>
+
+        {/* User Menu */}
+        <Button
+          variant="ghost"
+          className="
+            group
+            gap-3
+            !px-2
+            !py-1
+          "
+        >
+          <Avatar name="Kiran S M" />
+
+          <span className="text-sm font-medium text-ink">
+            Kiran
+          </span>
+
+          <ChevronDown
+            size={16}
+            strokeWidth={1.8}
+            className="
+              text-ink-muted
+              transition-transform
+              group-hover:translate-y-[1px]
+            "
+          />
+        </Button>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default NavBar;
+export default AppHeader

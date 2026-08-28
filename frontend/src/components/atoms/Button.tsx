@@ -1,5 +1,5 @@
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary"
+  variant?: "primary" | "secondary" | "ghost"
 }
 
 const Button = ({
@@ -25,6 +25,13 @@ const Button = ({
       bg-[#453127]
       text-paper
       hover:bg-[#523c30]
+    `,
+
+    ghost: `
+      bg-transparent
+      text-ink-muted
+      hover:bg-paper-dark
+      hover:text-ink
     `,
   }
 
