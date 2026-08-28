@@ -1,41 +1,43 @@
-import { Link } from "react-router-dom"
+import Button from "../atoms/Button";
 
 type AuthSwitchProps = {
-  text: string
-  action: string
-  to: string
-}
+  text: string;
+  action: string;
+  onClick: () => void;
+};
 
-const AuthSwitch = ({
-  text,
-  action,
-  to,
-}: AuthSwitchProps) => {
+const AuthSwitch = ({ text, action, onClick }: AuthSwitchProps) => {
   return (
-    <p
+    <div
       className="
-        text-center
+        flex
+        items-center
+        justify-center
+        gap-1
         font-body
         text-sm
         text-ink-muted
       "
     >
-      {text}
+      <span>{text}</span>
 
-      <Link
-        to={to}
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={onClick}
         className="
-          ml-1
+          !h-auto
+          !p-0
           font-medium
-          text-gold
-          transition-colors
-          hover:text-gold-light
+          !text-gold
+          hover:!bg-transparent
+          hover:!text-gold-light
         "
       >
         {action}
-      </Link>
-    </p>
-  )
-}
+      </Button>
+    </div>
+  );
+};
 
-export default AuthSwitch
+export default AuthSwitch;

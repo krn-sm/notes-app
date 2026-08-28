@@ -1,21 +1,40 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import Button from "../atoms/Button"
-import Input from "../atoms/Input"
-import AuthSwitch from "../molecules/AuthSwitch"
+import Button from "../atoms/Button";
+import Input from "../atoms/Input";
+import AuthSwitch from "../molecules/AuthSwitch";
 
 const AuthForm = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [isLogin, setIsLogin] = useState(true);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    console.log({
-      email,
-      password,
-    })
-  }
+    if (isLogin) {
+      console.log({
+        email,
+        password,
+      });
+    } else {
+      console.log({
+        name,
+        email,
+        password,
+      });
+    }
+  };
+
+  const handleSwitch = () => {
+    setIsLogin((previous) => !previous);
+
+    setName("");
+    setEmail("");
+    setPassword("");
+  };
 
   return (
     <section
@@ -30,115 +49,153 @@ const AuthForm = () => {
       "
     >
       <div className="w-full max-w-md">
-        {/* Heading */}
-        <div>
-          <h1
-            className="
-              font-display
-              text-4xl
-              font-medium
-              text-ink
-            "
-          >
-            Welcome back.
-          </h1>
-
-          <p
-            className="
-              mt-3
-              font-body
-              text-base
-              leading-relaxed
-              text-ink-muted
-            "
-          >
-            Your thoughts are waiting for you.
-          </p>
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="mt-10 space-y-7"
+        <div
+          key={isLogin ? "login" : "register"}
+          className="
+            animate-in
+            fade-in
+            duration-300
+          "
         >
-          {/* Email */}
+          {/* Heading */}
           <div>
-            <label
-              htmlFor="email"
+            <h1
               className="
-                mb-2
-                block
-                font-body
-                text-sm
+                font-display
+                text-4xl
                 font-medium
                 text-ink
               "
             >
-              Email
-            </label>
+              {isLogin ? "Welcome back." : "Begin your story."}
+            </h1>
 
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label
-              htmlFor="password"
+            <p
               className="
-                mb-2
-                block
+                mt-3
                 font-body
-                text-sm
-                font-medium
-                text-ink
+                text-base
+                leading-relaxed
+                text-ink-muted
               "
             >
-              Password
-            </label>
-
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
+              {isLogin
+                ? "Your thoughts are waiting for you."
+                : "Give your thoughts a place to stay."}
+            </p>
           </div>
 
-          {/* Submit */}
-          <Button
-            type="submit"
-            variant="primary"
-            className="
-              mt-3
-              h-12
-              w-full
-              text-[15px]
-            "
-          >
-            Log in
-          </Button>
-        </form>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="mt-10 space-y-7">
+            {/* Name — Register only */}
+            {!isLogin && (
+              <div>
+                <label
+                  htmlFor="name"
+                  className="
+                    mb-2
+                    block
+                    font-body
+                    text-sm
+                    font-medium
+                    text-ink
+                  "
+                >
+                  Name
+                </label>
 
-        {/* Auth Switch */}
-        <div className="mt-8">
-          <AuthSwitch
-            text="New to Memoir?"
-            action="Sign up"
-            to="/register"
-          />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                />
+              </div>
+            )}
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="
+                  mb-2
+                  block
+                  font-body
+                  text-sm
+                  font-medium
+                  text-ink
+                "
+              >
+                Email
+              </label>
+
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label
+                htmlFor="password"
+                className="
+                  mb-2
+                  block
+                  font-body
+                  text-sm
+                  font-medium
+                  text-ink
+                "
+              >
+                Password
+              </label>
+
+              <Input
+                id="password"
+                type="password"
+                placeholder={
+                  isLogin ? "Enter your password" : "Create a password"
+                }
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+
+            {/* Submit */}
+            <Button
+              type="submit"
+              variant="primary"
+              className="
+                mt-3
+                h-12
+                w-full
+                text-[15px]
+              "
+            >
+              {isLogin ? "Log in" : "Create account"}
+            </Button>
+          </form>
+
+          {/* Auth Switch */}
+          <div className="mt-8">
+            <AuthSwitch
+              text={isLogin ? "New to Memoir?" : "Already have an account?"}
+              action={isLogin ? "Sign up" : "Log in"}
+              onClick={handleSwitch}
+            />
+          </div>
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default AuthForm
+export default AuthForm;

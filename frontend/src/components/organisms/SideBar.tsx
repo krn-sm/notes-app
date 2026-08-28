@@ -6,13 +6,13 @@ import {
   Star,
   Tag,
   Trash2,
-} from "lucide-react"
-import { useState } from "react"
-import { NavLink } from "react-router-dom"
+} from "lucide-react";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
-import Button from "../atoms/Button"
-import Brand from "../molecules/Brand"
-import NavItem from "../molecules/NavItem"
+import Button from "../atoms/Button";
+import Brand from "../molecules/Brand";
+import NavItem from "../molecules/NavItem";
 
 const categories = [
   {
@@ -40,10 +40,10 @@ const categories = [
     count: 3,
     path: "/category/projects",
   },
-]
+];
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <aside
@@ -68,7 +68,7 @@ const Sidebar = () => {
     >
       {/* Collapse Button */}
       <Button
-        variant="primary"
+        variant="secondary"
         onClick={() => setCollapsed((prev) => !prev)}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         className="
@@ -220,9 +220,7 @@ const Sidebar = () => {
                 />
 
                 {!collapsed && (
-                  <span className="text-[15px]">
-                    {category.name}
-                  </span>
+                  <span className="text-[15px]">{category.name}</span>
                 )}
               </div>
 
@@ -243,7 +241,7 @@ const Sidebar = () => {
         </div>
       </section>
     </aside>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
