@@ -10,6 +10,10 @@ const Input = ({ className = "", ...props }: InputProps) => {
         text-ink
         outline-none
         placeholder:text-ink-muted
+
+        disabled:cursor-not-allowed
+        disabled:text-ink-muted
+        disabled:opacity-60
         ${className}
       `}
       {...props}

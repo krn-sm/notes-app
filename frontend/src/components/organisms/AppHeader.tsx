@@ -1,10 +1,20 @@
-import { Grid2X2, List } from "lucide-react";
+import { Grid2X2, List } from "lucide-react"
 
-import Avatar from "../atoms/Avatar";
-import Button from "../atoms/Button";
-import SearchBar from "../molecules/SearchBar";
+import type { User } from "../../services/authService"
 
-const AppHeader = () => {
+import Avatar from "../atoms/Avatar"
+import Button from "../atoms/Button"
+import SearchBar from "../molecules/SearchBar"
+
+type AppHeaderProps = {
+  user: User | null
+  onProfileClick: () => void
+}
+
+const AppHeader = ({
+  user,
+  onProfileClick,
+}: AppHeaderProps) => {
   return (
     <header
       className="
@@ -29,7 +39,7 @@ const AppHeader = () => {
             text-ink
           "
         >
-          Good morning, Kiran
+          Good morning, {user?.name ?? "there"}
           <span className="ml-2 text-gold">☀</span>
         </h1>
 
@@ -47,7 +57,10 @@ const AppHeader = () => {
 
       {/* Search */}
       <div className="w-full max-w-[300px]">
-        <SearchBar value="" onChange={() => {}} />
+        <SearchBar
+          value=""
+          onChange={() => {}}
+        />
       </div>
 
       {/* Header Actions */}
@@ -79,7 +92,10 @@ const AppHeader = () => {
               !text-ink
             "
           >
-            <List size={19} strokeWidth={1.8} />
+            <List
+              size={19}
+              strokeWidth={1.8}
+            />
           </Button>
 
           <Button
@@ -93,36 +109,42 @@ const AppHeader = () => {
               !py-0
             "
           >
-            <Grid2X2 size={18} strokeWidth={1.7} />
+            <Grid2X2
+              size={18}
+              strokeWidth={1.7}
+            />
           </Button>
         </div>
 
         {/* User Profile */}
-        <Button
-          variant="ghost"
-          className="
-            gap-3
-            !rounded-xl
-            !px-2
-            !py-1.5
-          "
-        >
-          <Avatar name="Jack Sparrow" />
-
-          <span
+        {user && (
+          <Button
+            variant="ghost"
+            onClick={onProfileClick}
             className="
-            font-body
-            text-sm
-            font-medium
-            text-ink
-          "
+              gap-3
+              !rounded-xl
+              !px-2
+              !py-1.5
+            "
           >
-            Jack Sparrow
-          </span>
-        </Button>
+            <Avatar name={user?.name ?? ""} />
+
+            <span
+              className="
+                font-body
+                text-sm
+                font-medium
+                text-ink
+              "
+            >
+              {user.name}
+            </span>
+          </Button>
+        )}
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default AppHeader;
+export default AppHeader

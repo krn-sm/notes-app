@@ -19,6 +19,10 @@ type LoginData = {
   password: string;
 };
 
+type UpdateProfileData = {
+  name: string;
+};
+
 export const register = async (data: RegisterData): Promise<User> => {
   return api<User>("/api/auth/register", {
     method: "POST",
@@ -35,6 +39,15 @@ export const login = async (data: LoginData): Promise<void> => {
 
 export const getCurrentUser = async (): Promise<User> => {
   return api<User>("/api/auth/me");
+};
+
+export const updateProfile = async (
+  data: UpdateProfileData,
+): Promise<User> => {
+  return api<User>("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 };
 
 export const logout = async (): Promise<void> => {
