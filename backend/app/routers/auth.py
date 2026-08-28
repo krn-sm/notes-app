@@ -43,6 +43,15 @@ def create_user_endpoint(
             detail=str(error),
         )
 
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+def get_current_user_endpoint(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
 
 @router.patch(
     "/me",

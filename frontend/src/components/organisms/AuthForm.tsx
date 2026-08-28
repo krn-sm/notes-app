@@ -1,40 +1,82 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
-import Button from "../atoms/Button";
-import Input from "../atoms/Input";
-import AuthSwitch from "../molecules/AuthSwitch";
+import Button from "../atoms/Button"
+import Input from "../atoms/Input"
+import Spinner from "../atoms/Spinner"
+import AuthSwitch from "../molecules/AuthSwitch"
+
+import {
+  login,
+  register,
+} from "../../services/authService"
+
+type AuthMode = "login" | "register"
 
 const AuthForm = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate()
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<AuthMode>("login")
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-    if (isLogin) {
-      console.log({
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault()
+
+    setError("")
+    setIsLoading(true)
+
+    try {
+      if (mode === "register") {
+        await register({
+          name,
+          email,
+          password,
+        })
+
+        setMode("login")
+        setPassword("")
+
+        return
+      }
+
+      await login({
         email,
         password,
-      });
-    } else {
-      console.log({
-        name,
-        email,
-        password,
-      });
+      })
+
+      navigate("/home")
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("Something went wrong")
+      }
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
-  const handleSwitch = () => {
-    setIsLogin((previous) => !previous);
 
-    setName("");
-    setEmail("");
-    setPassword("");
-  };
+  const switchMode = () => {
+    setError("")
+    setPassword("")
+
+    setMode((currentMode) =>
+      currentMode === "login"
+        ? "register"
+        : "login",
+    )
+  }
+
 
   return (
     <section
@@ -49,153 +91,198 @@ const AuthForm = () => {
       "
     >
       <div className="w-full max-w-md">
-        <div
-          key={isLogin ? "login" : "register"}
-          className="
-            animate-in
-            fade-in
-            duration-300
-          "
+
+        {/* Heading */}
+        <div>
+          <h1
+            className="
+              font-display
+              text-4xl
+              font-medium
+              text-ink
+            "
+          >
+            {mode === "login"
+              ? "Welcome back."
+              : "Start your memoir."
+            }
+          </h1>
+
+          <p
+            className="
+              mt-3
+              font-body
+              text-base
+              leading-relaxed
+              text-ink-muted
+            "
+          >
+            {mode === "login"
+              ? "Your thoughts are waiting for you."
+              : "A place for your thoughts, ideas, and memories."
+            }
+          </p>
+        </div>
+
+
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="mt-10 space-y-7"
         >
-          {/* Heading */}
+
+          {/* Name */}
+          {mode === "register" && (
+            <div>
+              <label
+                htmlFor="name"
+                className="
+                  mb-2
+                  block
+                  font-body
+                  text-sm
+                  font-medium
+                  text-ink
+                "
+              >
+                Name
+              </label>
+
+              <Input
+                id="name"
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(event) =>
+                  setName(event.target.value)
+                }
+                required
+              />
+            </div>
+          )}
+
+
+          {/* Email */}
           <div>
-            <h1
+            <label
+              htmlFor="email"
               className="
-                font-display
-                text-4xl
+                mb-2
+                block
+                font-body
+                text-sm
                 font-medium
                 text-ink
               "
             >
-              {isLogin ? "Welcome back." : "Begin your story."}
-            </h1>
+              Email
+            </label>
 
-            <p
-              className="
-                mt-3
-                font-body
-                text-base
-                leading-relaxed
-                text-ink-muted
-              "
-            >
-              {isLogin
-                ? "Your thoughts are waiting for you."
-                : "Give your thoughts a place to stay."}
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-10 space-y-7">
-            {/* Name — Register only */}
-            {!isLogin && (
-              <div>
-                <label
-                  htmlFor="name"
-                  className="
-                    mb-2
-                    block
-                    font-body
-                    text-sm
-                    font-medium
-                    text-ink
-                  "
-                >
-                  Name
-                </label>
-
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  required
-                />
-              </div>
-            )}
-
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="
-                  mb-2
-                  block
-                  font-body
-                  text-sm
-                  font-medium
-                  text-ink
-                "
-              >
-                Email
-              </label>
-
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="
-                  mb-2
-                  block
-                  font-body
-                  text-sm
-                  font-medium
-                  text-ink
-                "
-              >
-                Password
-              </label>
-
-              <Input
-                id="password"
-                type="password"
-                placeholder={
-                  isLogin ? "Enter your password" : "Create a password"
-                }
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </div>
-
-            {/* Submit */}
-            <Button
-              type="submit"
-              variant="primary"
-              className="
-                mt-3
-                h-12
-                w-full
-                text-[15px]
-              "
-            >
-              {isLogin ? "Log in" : "Create account"}
-            </Button>
-          </form>
-
-          {/* Auth Switch */}
-          <div className="mt-8">
-            <AuthSwitch
-              text={isLogin ? "New to Memoir?" : "Already have an account?"}
-              action={isLogin ? "Sign up" : "Log in"}
-              onClick={handleSwitch}
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              required
             />
           </div>
+
+
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="password"
+              className="
+                mb-2
+                block
+                font-body
+                text-sm
+                font-medium
+                text-ink
+              "
+            >
+              Password
+            </label>
+
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              minLength={8}
+              required
+            />
+          </div>
+
+
+          {/* Error */}
+          {error && (
+            <p
+              className="
+                rounded-lg
+                border
+                border-red-200
+                bg-red-50
+                px-4
+                py-3
+                font-body
+                text-sm
+                text-red-700
+              "
+            >
+              {error}
+            </p>
+          )}
+
+
+          {/* Submit */}
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isLoading}
+            className="
+              mt-3
+              h-12
+              w-full
+              text-[15px]
+            "
+          >
+            {isLoading ? (
+              <Spinner />
+            ) : mode === "login" ? (
+              "Log in"
+            ) : (
+              "Create account"
+            )}
+          </Button>
+        </form>
+
+
+        {/* Auth Switch */}
+        <div className="mt-8">
+          <AuthSwitch
+            text={
+              mode === "login"
+                ? "New to Memoir?"
+                : "Already have an account?"
+            }
+            action={
+              mode === "login"
+                ? "Sign up"
+                : "Log in"
+            }
+            onClick={switchMode}
+          />
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default AuthForm;
+export default AuthForm
