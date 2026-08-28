@@ -1,38 +1,39 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import Button from "../atoms/Button"
-import Input from "../atoms/Input"
-import Spinner from "../atoms/Spinner"
-import AuthSwitch from "../molecules/AuthSwitch"
+import Button from "../atoms/Button";
+import Input from "../atoms/Input";
+import Spinner from "../atoms/Spinner";
+
+import AuthSwitch from "../molecules/AuthSwitch";
+import Brand from "../molecules/Brand";
 
 import {
   login,
   register,
-} from "../../services/authService"
+} from "../../services/authService";
 
-type AuthMode = "login" | "register"
+type AuthMode = "login" | "register";
 
 const AuthForm = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [mode, setMode] = useState<AuthMode>("login")
+  const [mode, setMode] = useState<AuthMode>("login");
 
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    setError("")
-    setIsLoading(true)
+    setError("");
+    setIsLoading(true);
 
     try {
       if (mode === "register") {
@@ -40,97 +41,104 @@ const AuthForm = () => {
           name,
           email,
           password,
-        })
+        });
 
-        setMode("login")
-        setPassword("")
+        setMode("login");
+        setPassword("");
 
-        return
+        return;
       }
 
       await login({
         email,
         password,
-      })
+      });
 
-      navigate("/home")
+      navigate("/home");
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message)
+        setError(error.message);
       } else {
-        setError("Something went wrong")
+        setError("Something went wrong");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
+  };
 
   const switchMode = () => {
-    setError("")
-    setPassword("")
+    setError("");
+    setPassword("");
 
     setMode((currentMode) =>
       currentMode === "login"
         ? "register"
         : "login",
-    )
-  }
-
+    );
+  };
 
   return (
     <section
       className="
         flex
-        min-h-screen
         items-center
         justify-center
         bg-paper
-        px-8
-        py-12
+        px-6
+        py-14
+
+        sm:px-10
+        sm:py-16
+
+        lg:min-h-screen
+        lg:px-8
+        lg:py-12
       "
     >
       <div className="w-full max-w-md">
+
+        <div className="mb-14 lg:hidden">
+          <Brand />
+        </div>
 
         {/* Heading */}
         <div>
           <h1
             className="
               font-display
-              text-4xl
+              text-3xl
               font-medium
               text-ink
+
+              sm:text-4xl
             "
           >
             {mode === "login"
               ? "Welcome back."
-              : "Start your memoir."
-            }
+              : "Start your memoir."}
           </h1>
 
           <p
             className="
               mt-3
               font-body
-              text-base
+              text-[15px]
               leading-relaxed
               text-ink-muted
+              sm:text-base
             "
           >
             {mode === "login"
               ? "Your thoughts are waiting for you."
-              : "A place for your thoughts, ideas, and memories."
-            }
+              : "A place for your thoughts, ideas, and memories."}
           </p>
         </div>
-
 
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="mt-10 space-y-7"
+          className="mt-8 space-y-6 sm:mt-10 sm:space-y-7"
         >
-
           {/* Name */}
           {mode === "register" && (
             <div>
@@ -161,7 +169,6 @@ const AuthForm = () => {
             </div>
           )}
 
-
           {/* Email */}
           <div>
             <label
@@ -189,7 +196,6 @@ const AuthForm = () => {
               required
             />
           </div>
-
 
           {/* Password */}
           <div>
@@ -220,7 +226,6 @@ const AuthForm = () => {
             />
           </div>
 
-
           {/* Error */}
           {error && (
             <p
@@ -239,7 +244,6 @@ const AuthForm = () => {
               {error}
             </p>
           )}
-
 
           {/* Submit */}
           <Button
@@ -263,7 +267,6 @@ const AuthForm = () => {
           </Button>
         </form>
 
-
         {/* Auth Switch */}
         <div className="mt-8">
           <AuthSwitch
@@ -282,7 +285,7 @@ const AuthForm = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default AuthForm
+export default AuthForm;
