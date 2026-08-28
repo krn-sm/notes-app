@@ -1,8 +1,18 @@
+import AuthForm from "../components/organisms/AuthForm";
+import AuthHero from "../components/organisms/AuthHero";
 
 const LoginPage = () => {
   return (
-    <div>LoginPage</div>
-  )
-}
+    <div className="flex min-h-screen">
+      <div className="flex-[2]">
+        <AuthHero />
+      </div>
 
-export default LoginPage
+      <div className="min-w-[420px] flex-1">
+        <AuthForm />
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;
