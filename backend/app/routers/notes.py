@@ -6,6 +6,7 @@ from app.models import User
 from app.auth.dependencies import get_current_user
 from app.schemas.note import (
     NoteCreate,
+    NoteListResponse,
     NoteResponse,
     NoteUpdate,
 )
@@ -13,10 +14,6 @@ from app.services.note_service import (
     create_note,
     get_note,
     get_notes,
-    get_favorite_notes,
-    get_deleted_notes,
-    get_notes_by_tag,
-    search_notes,
     update_note,
     soft_delete_note,
     restore_note,
@@ -49,72 +46,38 @@ def create_note_endpoint(
 
 @router.get(
     "",
-    response_model=list[NoteResponse],
+    response_model=list[NoteListResponse],
 )
 def get_notes_endpoint(
+    favorite: bool | None = None,
+    deleted: bool = False,
+    tag_id: int | None = None,
+    q: str | None = Query(
+        default=None,
+        min_length=1,
+    ),
+    page: int = Query(
+        default=1,
+        ge=1,
+    ),
+    limit: int = Query(
+        default=12,
+        ge=1,
+        le=100,
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return get_notes(db, current_user.id)
-
-
-@router.get(
-    "/favorites",
-    response_model=list[NoteResponse],
-)
-def get_favorite_notes_endpoint(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-
-    return get_favorite_notes(
-        db,
-        current_user.id,
+    return get_notes(
+        db=db,
+        user_id=current_user.id,
+        favorite=favorite,
+        deleted=deleted,
+        tag_id=tag_id,
+        query=q,
+        page=page,
+        limit=limit,
     )
-
-
-@router.get(
-    "/trash",
-    response_model=list[NoteResponse],
-)
-def get_deleted_notes_endpoint(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-
-    return get_deleted_notes(
-        db,
-        current_user.id,
-    )
-
-
-@router.get(
-    "/tag/{tag_id}",
-    response_model=list[NoteResponse],
-)
-def get_notes_by_tag_endpoint(
-    tag_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-
-    return get_notes_by_tag(
-        db,
-        current_user.id,
-        tag_id,
-    )
-
-
-@router.get(
-    "/search",
-    response_model=list[NoteResponse],
-)
-def search_notes_endpoint(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    q: str = Query(min_length=1),
-):
-    return search_notes(db, current_user.id, q)
 
 
 @router.get(

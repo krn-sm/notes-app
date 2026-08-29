@@ -10,7 +10,6 @@ from app.services.tag_service import (
     delete_tag,
     get_tags,
     update_tag,
-    get_top_tags
 )
 
 router = APIRouter(
@@ -54,20 +53,6 @@ def get_tags_endpoint(
     db,
     current_user.id,
 )
-
-
-@router.get(
-    "/top",
-    response_model=list[TagResponse],
-)
-def get_top_tags_endpoint(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    return get_top_tags(
-        db,
-        current_user.id,
-    )
 
 
 @router.patch(

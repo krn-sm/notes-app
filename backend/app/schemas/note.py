@@ -44,3 +44,11 @@ class NoteResponse(BaseModel):
     updated_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class NoteListResponse(BaseModel):
+    items: list[NoteResponse]
+    total: int
+    page: int
+    limit: int
+    total_pages: int

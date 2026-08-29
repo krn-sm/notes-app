@@ -1,4 +1,4 @@
-from sqlalchemy import select, or_
+from sqlalchemy import func, select, or_
 from sqlalchemy.orm import Session
 
 from app.models import Note, Tag
@@ -7,73 +7,76 @@ from app.models import Note, Tag
 def get_notes(
     db: Session,
     user_id: int,
-) -> list[Note]:
+    favorite: bool | None = None,
+    deleted: bool = False,
+    tag_id: int | None = None,
+    query: str | None = None,
+    page: int = 1,
+    limit: int = 12,
+) -> tuple[list[Note], int]:
 
     statement = (
         select(Note)
         .where(
             Note.user_id == user_id,
-            Note.is_deleted.is_(False),
+            Note.is_deleted == deleted,
         )
-        .order_by(Note.updated_at.desc())
     )
 
-    return list(db.scalars(statement).all())
+    # Filter favorites
+    if favorite is not None:
+        statement = statement.where(
+            Note.is_favorite == favorite
+        )
 
+    # Filter by tag
+    if tag_id is not None:
+        statement = (
+            statement
+            .join(Note.tags)
+            .where(Tag.id == tag_id)
+        )
 
-def get_favorite_notes(
-    db: Session,
-    user_id: int,
-) -> list[Note]:
+    # Search by title, content, or tag name
+    if query:
+        search_term = f"%{query.strip()}%"
 
+        statement = (
+            statement
+            .outerjoin(Note.tags)
+            .where(
+                or_(
+                    Note.title.ilike(search_term),
+                    Note.content.ilike(search_term),
+                    Tag.name.ilike(search_term),
+                )
+            )
+        )
+
+    # Remove duplicates caused by joining tags
+    statement = statement.distinct()
+
+    # Get total count before pagination
+    count_statement = (
+        select(func.count())
+        .select_from(statement.subquery())
+    )
+
+    total = db.scalar(count_statement) or 0
+
+    # Apply ordering and pagination
     statement = (
-        select(Note)
-        .where(
-            Note.user_id == user_id,
-            Note.is_favorite.is_(True),
-            Note.is_deleted.is_(False),
-        )
+        statement
         .order_by(Note.updated_at.desc())
+        .offset((page - 1) * limit)
+        .limit(limit)
     )
 
-    return list(db.scalars(statement).all())
-
-
-def get_deleted_notes(
-    db: Session,
-    user_id: int,
-) -> list[Note]:
-
-    statement = (
-        select(Note)
-        .where(
-            Note.user_id == user_id,
-            Note.is_deleted.is_(True),
-        )
-        .order_by(Note.updated_at.desc())
+    notes = list(
+        db.scalars(statement).all()
     )
 
-    return list(db.scalars(statement).all())
-
-
-def get_notes_by_tag(
-    db: Session,
-    user_id: int,
-    tag_id: int,
-) -> list[Note]:
-
-    statement = (
-        select(Note)
-        .join(Note.tags)
-        .where(
-            Note.user_id == user_id,
-            Tag.id == tag_id,
-            Note.is_deleted.is_(False),
-        )
-        .order_by(Note.updated_at.desc())
-    )
-
-    return list(db.scalars(statement).all())
+    return notes, total
 
 
 def get_note(
@@ -131,36 +134,6 @@ def update_note(
     db.refresh(note)
 
     return note
-
-
-def search_notes(
-    db: Session,
-    user_id: int,
-    query: str,
-) -> list[Note]:
-
-    search_term = f"%{query.strip()}%"
-
-    statement = (
-        select(Note)
-        .join(
-            Note.tags,
-            isouter=True,
-        )
-        .where(
-            Note.user_id == user_id,
-            Note.is_deleted.is_(False),
-            or_(
-                Note.title.ilike(search_term),
-                Note.content.ilike(search_term),
-                Tag.name.ilike(search_term),
-            ),
-        )
-        .order_by(Note.updated_at.desc())
-        .distinct()
-    )
-
-    return list(db.scalars(statement).all())
 
 
 def hard_delete_note(

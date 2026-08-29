@@ -55,28 +55,6 @@ def get_tags(
     ]
 
 
-def get_top_tags(
-    db: Session,
-    user_id: int,
-    limit: int = 5,
-):
-
-    tags = tag_repository.get_top_tags(
-        db,
-        user_id,
-        limit,
-    )
-
-    return [
-        {
-            "id": tag.id,
-            "name": tag.name,
-            "note_count": note_count,
-        }
-        for tag, note_count in tags
-    ]
-
-
 def update_tag(
     db: Session,
     tag_id: int,

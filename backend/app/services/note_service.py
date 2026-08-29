@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from math import ceil
 
 from app.models import Note
 from app.schemas.note import NoteCreate, NoteUpdate
@@ -40,12 +41,34 @@ def create_note(
 def get_notes(
     db: Session,
     user_id: int,
-) -> list[Note]:
+    favorite: bool | None = None,
+    deleted: bool = False,
+    tag_id: int | None = None,
+    query: str | None = None,
+    page: int = 1,
+    limit: int = 12,
+):
 
-    return note_repository.get_notes(
-        db,
-        user_id,
+    notes, total = note_repository.get_notes(
+        db=db,
+        user_id=user_id,
+        favorite=favorite,
+        deleted=deleted,
+        tag_id=tag_id,
+        query=query,
+        page=page,
+        limit=limit,
     )
+
+    total_pages = ceil(total / limit) if total > 0 else 0
+
+    return {
+        "items": notes,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": total_pages,
+    }
 
 
 def get_note(
@@ -58,41 +81,6 @@ def get_note(
         db,
         note_id,
         user_id,
-    )
-
-
-def get_favorite_notes(
-    db: Session,
-    user_id: int,
-) -> list[Note]:
-
-    return note_repository.get_favorite_notes(
-        db,
-        user_id,
-    )
-
-
-def get_deleted_notes(
-    db: Session,
-    user_id: int,
-) -> list[Note]:
-
-    return note_repository.get_deleted_notes(
-        db,
-        user_id,
-    )
-
-
-def get_notes_by_tag(
-    db: Session,
-    user_id: int,
-    tag_id: int,
-) -> list[Note]:
-
-    return note_repository.get_notes_by_tag(
-        db,
-        user_id,
-        tag_id,
     )
 
 
@@ -145,19 +133,6 @@ def update_note(
     return note_repository.update_note(
         db,
         note,
-    )
-
-
-def search_notes(
-    db: Session,
-    user_id: int,
-    query: str,
-) -> list[Note]:
-
-    return note_repository.search_notes(
-        db,
-        user_id,
-        query,
     )
 
 
