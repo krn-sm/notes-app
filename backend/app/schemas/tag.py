@@ -12,4 +12,6 @@ class TagUpdate(BaseModel):
 class TagResponse(BaseModel):
     id: int
     name: str
-    note_count: int = 0
+
+class TagWithCountResponse(TagResponse):
+    note_count: int

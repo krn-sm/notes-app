@@ -46,7 +46,7 @@ class NoteResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class NoteListResponse(BaseModel):
+class PaginatedNotesResponse(BaseModel):
     items: list[NoteResponse]
     total: int
     page: int

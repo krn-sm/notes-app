@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.database import get_db
 from app.models import User
-from app.schemas.tag import TagCreate, TagResponse, TagUpdate
+from app.schemas.tag import TagCreate, TagResponse, TagUpdate, TagWithCountResponse
 from app.services.tag_service import (
     create_tag,
     delete_tag,
@@ -43,7 +43,7 @@ def create_tag_endpoint(
 
 @router.get(
     "",
-    response_model=list[TagResponse],
+    response_model=list[TagWithCountResponse]
 )
 def get_tags_endpoint(
     current_user: User = Depends(get_current_user),

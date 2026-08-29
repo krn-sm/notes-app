@@ -6,7 +6,7 @@ from app.models import User
 from app.auth.dependencies import get_current_user
 from app.schemas.note import (
     NoteCreate,
-    NoteListResponse,
+    PaginatedNotesResponse,
     NoteResponse,
     NoteUpdate,
 )
@@ -46,7 +46,7 @@ def create_note_endpoint(
 
 @router.get(
     "",
-    response_model=list[NoteListResponse],
+    response_model=PaginatedNotesResponse
 )
 def get_notes_endpoint(
     favorite: bool | None = None,
