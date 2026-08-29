@@ -1,6 +1,14 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Text, Table, Column, ForeignKey
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    String,
+    Text,
+    Table,
+    Column,
+    ForeignKey,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -40,6 +48,16 @@ class Note(Base):
 
     content: Mapped[str] = mapped_column(
         Text,
+        nullable=False,
+    )
+
+    is_favorite: Mapped[bool] = mapped_column(
+    default=False,
+    nullable=False,
+    )
+
+    is_deleted: Mapped[bool] = mapped_column(
+        default=False,
         nullable=False,
     )
 

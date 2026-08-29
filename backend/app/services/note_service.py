@@ -61,6 +61,41 @@ def get_note(
     )
 
 
+def get_favorite_notes(
+    db: Session,
+    user_id: int,
+) -> list[Note]:
+
+    return note_repository.get_favorite_notes(
+        db,
+        user_id,
+    )
+
+
+def get_deleted_notes(
+    db: Session,
+    user_id: int,
+) -> list[Note]:
+
+    return note_repository.get_deleted_notes(
+        db,
+        user_id,
+    )
+
+
+def get_notes_by_tag(
+    db: Session,
+    user_id: int,
+    tag_id: int,
+) -> list[Note]:
+
+    return note_repository.get_notes_by_tag(
+        db,
+        user_id,
+        tag_id,
+    )
+
+
 def update_note(
     db: Session,
     note_id: int,
@@ -74,7 +109,7 @@ def update_note(
         user_id,
     )
 
-    if note is None:
+    if note is None or note.is_deleted:
         return None
 
     if note_data.title is not None:
@@ -92,7 +127,9 @@ def update_note(
                 user_id,
             )
 
-            if len(tags) != len(set(note_data.tag_ids)):
+            if len(tags) != len(
+                set(note_data.tag_ids)
+            ):
                 raise ValueError(
                     "One or more tag IDs do not exist"
                 )
@@ -101,6 +138,9 @@ def update_note(
 
         else:
             note.tags = []
+
+    if note_data.is_favorite is not None:
+        note.is_favorite = note_data.is_favorite
 
     return note_repository.update_note(
         db,
@@ -121,7 +161,53 @@ def search_notes(
     )
 
 
-def delete_note(
+def soft_delete_note(
+    db: Session,
+    note_id: int,
+    user_id: int,
+) -> Note | None:
+
+    note = note_repository.get_note(
+        db,
+        note_id,
+        user_id,
+    )
+
+    if note is None or note.is_deleted:
+        return None
+
+    note.is_deleted = True
+
+    return note_repository.update_note(
+        db,
+        note,
+    )
+
+
+def restore_note(
+    db: Session,
+    note_id: int,
+    user_id: int,
+) -> Note | None:
+
+    note = note_repository.get_note(
+        db,
+        note_id,
+        user_id,
+    )
+
+    if note is None or not note.is_deleted:
+        return None
+
+    note.is_deleted = False
+
+    return note_repository.update_note(
+        db,
+        note,
+    )
+
+
+def hard_delete_note(
     db: Session,
     note_id: int,
     user_id: int,
@@ -133,10 +219,10 @@ def delete_note(
         user_id,
     )
 
-    if note is None:
+    if note is None or not note.is_deleted:
         return False
 
-    note_repository.delete_note(
+    note_repository.hard_delete_note(
         db,
         note,
     )

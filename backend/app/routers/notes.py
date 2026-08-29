@@ -11,11 +11,16 @@ from app.schemas.note import (
 )
 from app.services.note_service import (
     create_note,
-    delete_note,
     get_note,
     get_notes,
+    get_favorite_notes,
+    get_deleted_notes,
+    get_notes_by_tag,
     search_notes,
     update_note,
+    soft_delete_note,
+    restore_note,
+    hard_delete_note
 )
 
 
@@ -51,6 +56,53 @@ def get_notes_endpoint(
     db: Session = Depends(get_db),
 ):
     return get_notes(db, current_user.id)
+
+
+@router.get(
+    "/favorites",
+    response_model=list[NoteResponse],
+)
+def get_favorite_notes_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    return get_favorite_notes(
+        db,
+        current_user.id,
+    )
+
+
+@router.get(
+    "/trash",
+    response_model=list[NoteResponse],
+)
+def get_deleted_notes_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    return get_deleted_notes(
+        db,
+        current_user.id,
+    )
+
+
+@router.get(
+    "/tag/{tag_id}",
+    response_model=list[NoteResponse],
+)
+def get_notes_by_tag_endpoint(
+    tag_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    return get_notes_by_tag(
+        db,
+        current_user.id,
+        tag_id,
+    )
 
 
 @router.get(
@@ -111,18 +163,74 @@ def update_note_endpoint(
 
 @router.delete(
     "/{note_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=NoteResponse,
 )
-def delete_note_endpoint(
+def soft_delete_note_endpoint(
     note_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    deleted = delete_note(db, note_id, current_user.id)
+
+    note = soft_delete_note(
+        db,
+        note_id,
+        current_user.id,
+    )
+
+    if note is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Note not found",
+        )
+
+    return note
+
+
+@router.patch(
+    "/{note_id}/restore",
+    response_model=NoteResponse,
+)
+def restore_note_endpoint(
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    note = restore_note(
+        db,
+        note_id,
+        current_user.id,
+    )
+
+    if note is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Note not found",
+        )
+
+    return note
+
+
+@router.delete(
+    "/{note_id}/permanent",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def hard_delete_note_endpoint(
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    deleted = hard_delete_note(
+        db,
+        note_id,
+        current_user.id,
+    )
 
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Note not found",
         )
+
     return None

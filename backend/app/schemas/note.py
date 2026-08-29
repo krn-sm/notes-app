@@ -26,6 +26,7 @@ class NoteUpdate(BaseModel):
         min_length=1
     )
     tag_ids: list[int] | None = None
+    is_favorite: bool | None = None
 
 
 class NoteResponse(BaseModel):
@@ -33,7 +34,12 @@ class NoteResponse(BaseModel):
     user_id: int
     title: str
     content: str
+
+    is_favorite: bool
+    is_deleted: bool
+
     tags: list[TagResponse] = Field(default_factory=list)
+
     created_at: datetime
     updated_at: datetime
     

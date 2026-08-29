@@ -20,7 +20,9 @@ def create_tag(
     )
 
     if existing_tag:
-        raise ValueError("Tag already exists")
+        raise ValueError(
+            "Tag already exists"
+        )
 
     tag = Tag(
         user_id=user_id,
@@ -36,12 +38,43 @@ def create_tag(
 def get_tags(
     db: Session,
     user_id: int,
-) -> list[Tag]:
+):
 
-    return tag_repository.get_tags(
+    tags = tag_repository.get_tags_with_count(
         db,
         user_id,
     )
+
+    return [
+        {
+            "id": tag.id,
+            "name": tag.name,
+            "note_count": note_count,
+        }
+        for tag, note_count in tags
+    ]
+
+
+def get_top_tags(
+    db: Session,
+    user_id: int,
+    limit: int = 5,
+):
+
+    tags = tag_repository.get_top_tags(
+        db,
+        user_id,
+        limit,
+    )
+
+    return [
+        {
+            "id": tag.id,
+            "name": tag.name,
+            "note_count": note_count,
+        }
+        for tag, note_count in tags
+    ]
 
 
 def update_tag(
@@ -68,7 +101,10 @@ def update_tag(
         user_id,
     )
 
-    if existing_tag and existing_tag.id != tag_id:
+    if (
+        existing_tag
+        and existing_tag.id != tag_id
+    ):
         raise ValueError(
             "Tag with this name already exists"
         )
