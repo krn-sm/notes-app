@@ -1,17 +1,15 @@
-import Button from "../../atoms/Button"
-import FormField from "../../molecules/FormField"
+import Button from "../atoms/Button";
+import FormField from "./FormField";
 
 type ProfileFormProps = {
-  name: string
-  email: string
-  error: string
-  hasChanges: boolean
-  isLoading: boolean
-  onNameChange: (value: string) => void
-  onSubmit: (
-    event: React.FormEvent<HTMLFormElement>
-  ) => void
-}
+  name: string;
+  email: string;
+  error: string;
+  hasChanges: boolean;
+  isLoading: boolean;
+  onNameChange: (value: string) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+};
 
 const ProfileForm = ({
   name,
@@ -35,9 +33,7 @@ const ProfileForm = ({
         id="profile-name"
         type="text"
         value={name}
-        onChange={(event) =>
-          onNameChange(event.target.value)
-        }
+        onChange={(event) => onNameChange(event.target.value)}
         required
       />
 
@@ -78,11 +74,7 @@ const ProfileForm = ({
       <Button
         type="submit"
         variant="primary"
-        disabled={
-          isLoading ||
-          !hasChanges ||
-          !name.trim()
-        }
+        disabled={isLoading || !hasChanges || !name.trim()}
         className="
           h-12
           w-full
@@ -92,7 +84,7 @@ const ProfileForm = ({
         Save changes
       </Button>
     </form>
-  )
-}
+  );
+};
 
-export default ProfileForm
+export default ProfileForm;

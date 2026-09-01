@@ -1,14 +1,12 @@
-import { X } from "lucide-react"
+import { X } from "lucide-react";
 
-import Button from "../../atoms/Button"
+import Button from "../atoms/Button";
 
 type ProfileDrawerHeaderProps = {
-  onClose: () => void
-}
+  onClose: () => void;
+};
 
-const ProfileDrawerHeader = ({
-  onClose,
-}: ProfileDrawerHeaderProps) => {
+const ProfileDrawerHeader = ({ onClose }: ProfileDrawerHeaderProps) => {
   return (
     <div
       className="
@@ -43,13 +41,10 @@ const ProfileDrawerHeader = ({
           !p-0
         "
       >
-        <X
-          size={20}
-          strokeWidth={1.8}
-        />
+        <X size={20} strokeWidth={1.8} />
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default ProfileDrawerHeader
+export default ProfileDrawerHeader;

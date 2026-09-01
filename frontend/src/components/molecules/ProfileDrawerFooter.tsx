@@ -1,12 +1,10 @@
-import Button from "../../atoms/Button"
+import Button from "../atoms/Button";
 
 type ProfileDrawerFooterProps = {
-  onLogout: () => void
-}
+  onLogout: () => void;
+};
 
-const ProfileDrawerFooter = ({
-  onLogout,
-}: ProfileDrawerFooterProps) => {
+const ProfileDrawerFooter = ({ onLogout }: ProfileDrawerFooterProps) => {
   return (
     <div
       className="
@@ -28,7 +26,7 @@ const ProfileDrawerFooter = ({
         Log out
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default ProfileDrawerFooter
+export default ProfileDrawerFooter;

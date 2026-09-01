@@ -1,27 +1,27 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   logout,
   updateProfile,
   type User,
-} from "../../../services/authService"
+} from "../../services/authService";
 
-import ConfirmationModal from "../ConfirmationModal"
+import ConfirmationModal from "../organisms/ConfirmationModal";
 
-import ProfileDrawerHeader from "./ProfileDrawerHeader"
-import ProfileDrawerFooter from "./ProfileDrawerFooter"
-import ProfileForm from "./ProfileForm"
-import ProfileInfo from "./ProfileInfo"
+import ProfileDrawerFooter from "../molecules/ProfileDrawerFooter";
+import ProfileDrawerHeader from "../molecules/ProfileDrawerHeader";
+import ProfileForm from "../molecules/ProfileForm";
+import ProfileInfo from "../molecules/ProfileInfo";
 
 type ProfileDrawerProps = {
-  isOpen: boolean
-  onClose: () => void
-  name: string
-  email: string
-  onUserUpdate: (user: User) => void
-  showToast: (message: string) => void
-}
+  isOpen: boolean;
+  onClose: () => void;
+  name: string;
+  email: string;
+  onUserUpdate: (user: User) => void;
+  showToast: (message: string) => void;
+};
 
 const ProfileDrawer = ({
   isOpen,
@@ -31,113 +31,94 @@ const ProfileDrawer = ({
   onUserUpdate,
   showToast,
 }: ProfileDrawerProps) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [updatedName, setUpdatedName] = useState(name)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [updatedName, setUpdatedName] = useState(name);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [isDiscardModalOpen, setIsDiscardModalOpen] =
-    useState(false)
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
 
-  const [isSaveModalOpen, setIsSaveModalOpen] =
-    useState(false)
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const [isLogoutModalOpen, setIsLogoutModalOpen] =
-    useState(false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  const hasChanges =
-    updatedName.trim() !== name
-
+  const hasChanges = updatedName.trim() !== name;
 
   const handleClose = () => {
     if (hasChanges) {
-      setIsDiscardModalOpen(true)
-      return
+      setIsDiscardModalOpen(true);
+      return;
     }
 
-    onClose()
-  }
-
+    onClose();
+  };
 
   const handleDiscard = () => {
-    setUpdatedName(name)
-    setError("")
+    setUpdatedName(name);
+    setError("");
 
-    setIsDiscardModalOpen(false)
+    setIsDiscardModalOpen(false);
 
-    onClose()
-  }
+    onClose();
+  };
 
+  const handleSaveRequest = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-  const handleSaveRequest = (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault()
-
-    if (
-      !hasChanges ||
-      !updatedName.trim()
-    ) {
-      return
+    if (!hasChanges || !updatedName.trim()) {
+      return;
     }
 
-    setIsSaveModalOpen(true)
-  }
-
+    setIsSaveModalOpen(true);
+  };
 
   const confirmSave = async () => {
-    setError("")
-    setIsLoading(true)
+    setError("");
+    setIsLoading(true);
 
     try {
-      const updatedUser =
-        await updateProfile({
-          name: updatedName.trim(),
-        })
+      const updatedUser = await updateProfile({
+        name: updatedName.trim(),
+      });
 
-      onUserUpdate(updatedUser)
+      onUserUpdate(updatedUser);
 
-      setUpdatedName(updatedUser.name)
+      setUpdatedName(updatedUser.name);
 
-      setIsSaveModalOpen(false)
+      setIsSaveModalOpen(false);
 
-      onClose()
+      onClose();
 
-      showToast(
-        "Name updated successfully",
-      )
+      showToast("Name updated successfully");
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message)
+        setError(error.message);
       } else {
-        setError("Something went wrong")
+        setError("Something went wrong");
       }
 
-      setIsSaveModalOpen(false)
+      setIsSaveModalOpen(false);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
+  };
 
   const handleLogoutRequest = () => {
-    setIsLogoutModalOpen(true)
-  }
-
+    setIsLogoutModalOpen(true);
+  };
 
   const handleLogout = async () => {
     try {
-      await logout()
+      await logout();
 
       navigate("/", {
         replace: true,
-      })
+      });
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
-
+  };
 
   return (
     <>
@@ -179,16 +160,10 @@ const ProfileDrawer = ({
           duration-300
           ease-in-out
 
-          ${
-            isOpen
-              ? "translate-x-0"
-              : "translate-x-full"
-          }
+          ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
       >
-        <ProfileDrawerHeader
-          onClose={handleClose}
-        />
+        <ProfileDrawerHeader onClose={handleClose} />
 
         <div
           className="
@@ -198,10 +173,7 @@ const ProfileDrawer = ({
             py-10
           "
         >
-          <ProfileInfo
-            name={name}
-            email={email}
-          />
+          <ProfileInfo name={name} email={email} />
 
           <ProfileForm
             name={updatedName}
@@ -214,11 +186,8 @@ const ProfileDrawer = ({
           />
         </div>
 
-        <ProfileDrawerFooter
-          onLogout={handleLogoutRequest}
-        />
+        <ProfileDrawerFooter onLogout={handleLogoutRequest} />
       </aside>
-
 
       {/* Discard Changes */}
       <ConfirmationModal
@@ -227,13 +196,10 @@ const ProfileDrawer = ({
         description="You have unsaved changes. Are you sure you want to discard them?"
         cancelLabel="Keep editing"
         confirmLabel="Discard"
-        onCancel={() =>
-          setIsDiscardModalOpen(false)
-        }
+        onCancel={() => setIsDiscardModalOpen(false)}
         onConfirm={handleDiscard}
         danger
       />
-
 
       {/* Save Changes */}
       <ConfirmationModal
@@ -242,13 +208,10 @@ const ProfileDrawer = ({
         description="Are you sure you want to update your name?"
         cancelLabel="Keep editing"
         confirmLabel="Save changes"
-        onCancel={() =>
-          setIsSaveModalOpen(false)
-        }
+        onCancel={() => setIsSaveModalOpen(false)}
         onConfirm={confirmSave}
         isLoading={isLoading}
       />
-
 
       {/* Logout */}
       <ConfirmationModal
@@ -257,14 +220,12 @@ const ProfileDrawer = ({
         description="Are you sure you want to log out of Memoir?"
         cancelLabel="Stay"
         confirmLabel="Log out"
-        onCancel={() =>
-          setIsLogoutModalOpen(false)
-        }
+        onCancel={() => setIsLogoutModalOpen(false)}
         onConfirm={handleLogout}
         danger
       />
     </>
-  )
-}
+  );
+};
 
-export default ProfileDrawer
+export default ProfileDrawer;

@@ -1,14 +1,11 @@
-import Avatar from "../../atoms/Avatar"
+import Avatar from "../atoms/Avatar";
 
 type ProfileInfoProps = {
-  name: string
-  email: string
-}
+  name: string;
+  email: string;
+};
 
-const ProfileInfo = ({
-  name,
-  email,
-}: ProfileInfoProps) => {
+const ProfileInfo = ({ name, email }: ProfileInfoProps) => {
   return (
     <div
       className="
@@ -42,7 +39,7 @@ const ProfileInfo = ({
         {email}
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default ProfileInfo
+export default ProfileInfo;
