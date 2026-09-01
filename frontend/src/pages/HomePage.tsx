@@ -1,115 +1,194 @@
-import { useState } from "react"
+import { useEffect, useState } from "react";
 
 import {
   useLocation,
   useOutletContext,
   useParams,
-} from "react-router-dom"
+} from "react-router-dom";
 
-import AppHeader from "../components/organisms/AppHeader"
-import NoteEditor from "../components/organisms/NoteEditor"
-import NoteList from "../components/organisms/NoteList"
+import AppHeader from "../components/organisms/AppHeader";
+import NoteEditor from "../components/organisms/NoteEditor";
+import NoteList from "../components/organisms/NoteList";
 
-import type { User } from "../services/authService"
-import type { Note } from "../services/noteService"
+import type { User } from "../services/authService";
+import type { Note } from "../services/noteService";
+
+import {
+  getTags,
+  type TagWithCount,
+} from "../services/tagService";
 
 type OutletContext = {
-  user: User | null
-  onProfileClick: () => void
-}
+  user: User | null;
+
+  onProfileClick: () => void;
+
+  isCreatingNote: boolean;
+
+  setIsCreatingNote: (
+    value: boolean,
+  ) => void;
+
+  newNoteKey: number;
+};
 
 const HomePage = () => {
   const {
     user,
     onProfileClick,
-  } = useOutletContext<OutletContext>()
+    isCreatingNote,
+    setIsCreatingNote,
+    newNoteKey,
+  } = useOutletContext<OutletContext>();
 
-  const location = useLocation()
-  const { tagId } = useParams()
+  const location = useLocation();
 
-  const [searchQuery, setSearchQuery] =
-    useState("")
+  const { tagId } = useParams();
+
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState("");
 
   const [
     notesRefreshKey,
     setNotesRefreshKey,
-  ] = useState(0)
+  ] = useState(0);
 
   const [
     selectedNote,
     setSelectedNote,
-  ] = useState<Note | null>(null)
+  ] = useState<Note | null>(null);
+
+  const [
+    tags,
+    setTags,
+  ] = useState<TagWithCount[]>([]);
+
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await getTags();
+
+        setTags(response);
+      } catch (error) {
+        console.error(
+          "Failed to load tags:",
+          error,
+        );
+      }
+    };
+
+    loadTags();
+  }, []);
+
+  /*
+   * When creating a new note, we intentionally
+   * ignore any previously selected note.
+   */
+
+  const activeNote =
+    isCreatingNote
+      ? null
+      : selectedNote;
 
   const isEditorOpen =
-    selectedNote !== null
+    activeNote !== null ||
+    isCreatingNote;
 
   const handleNoteUpdated = (
     updatedNote: Note,
   ) => {
-    setSelectedNote(updatedNote)
+    setSelectedNote(updatedNote);
 
     setNotesRefreshKey(
       (current) => current + 1,
-    )
-  }
+    );
+  };
 
   const handleNoteDeleted = () => {
-    setSelectedNote(null)
+    setSelectedNote(null);
+
+    setIsCreatingNote(false);
 
     setNotesRefreshKey(
       (current) => current + 1,
-    )
-  }
+    );
+  };
+
+  const handleNoteClick = (
+    note: Note,
+  ) => {
+    setSelectedNote(note);
+
+    setIsCreatingNote(false);
+  };
+
+  const currentTag = tags.find(
+    (tag) =>
+      tag.id === Number(tagId),
+  );
 
   const getPageDetails = () => {
-    const path = location.pathname
+    const path = location.pathname;
 
     if (path === "/home/favorites") {
       return {
         title: "Favorites",
+
         description:
           "Notes you've marked as favorites.",
+
         filters: {
           favorite: true,
         },
-      }
+      };
     }
 
     if (path === "/home/trash") {
       return {
         title: "Trash",
+
         description:
           "Notes you've moved to trash.",
+
         filters: {
           deleted: true,
         },
-      }
+      };
     }
 
     if (tagId) {
       return {
-        title: "Tags",
+        title:
+          currentTag?.name ?? "Tags",
+
         description:
-          "Notes with this tag.",
+          currentTag
+            ? `Notes with the ${currentTag.name} tag.`
+            : "Notes with this tag.",
+
         filters: {
           tag_id: Number(tagId),
         },
-      }
+      };
     }
 
     return {
       title: "All Notes",
+
       description:
         "Your thoughts, ideas, and memories.",
+
       filters: {},
-    }
-  }
+    };
+  };
 
   const {
     title,
     description,
     filters,
-  } = getPageDetails()
+  } = getPageDetails();
 
   return (
     <div
@@ -146,7 +225,7 @@ const HomePage = () => {
             duration-300
           "
         >
-          {/* Notes area */}
+          {/* Notes Area */}
 
           <div
             className={`
@@ -155,6 +234,7 @@ const HomePage = () => {
               flex-col
               transition-all
               duration-300
+
               ${
                 isEditorOpen
                   ? "w-72 shrink-0"
@@ -162,9 +242,14 @@ const HomePage = () => {
               }
             `}
           >
-            {/* Page heading */}
+            {/* Page Heading */}
 
-            <div className="mb-6 shrink-0">
+            <div
+              className="
+                mb-6
+                shrink-0
+              "
+            >
               <h1
                 className="
                   font-serif
@@ -186,7 +271,7 @@ const HomePage = () => {
               </p>
             </div>
 
-            {/* Note list */}
+            {/* Note List */}
 
             <div
               className="
@@ -203,9 +288,11 @@ const HomePage = () => {
                     : "grid"
                 }
                 selectedNoteId={
-                  selectedNote?.id ?? null
+                  activeNote?.id ?? null
                 }
-                onNoteClick={setSelectedNote}
+                onNoteClick={
+                  handleNoteClick
+                }
                 filters={filters}
                 searchQuery={searchQuery}
               />
@@ -214,7 +301,7 @@ const HomePage = () => {
 
           {/* Editor */}
 
-          {selectedNote && (
+          {isEditorOpen && (
             <div
               className="
                 min-w-0
@@ -227,11 +314,32 @@ const HomePage = () => {
               "
             >
               <NoteEditor
-                key={selectedNote.id}
-                note={selectedNote}
-                onClose={() =>
-                  setSelectedNote(null)
+                key={
+                  isCreatingNote
+                    ? `new-note-${newNoteKey}`
+                    : activeNote?.id
                 }
+                note={activeNote ?? undefined}
+                isNew={isCreatingNote}
+                onClose={() => {
+                  setSelectedNote(null);
+
+                  setIsCreatingNote(false);
+                }}
+                onNoteCreated={(
+                  createdNote,
+                ) => {
+                  setSelectedNote(
+                    createdNote,
+                  );
+
+                  setIsCreatingNote(false);
+
+                  setNotesRefreshKey(
+                    (current) =>
+                      current + 1,
+                  );
+                }}
                 onNoteUpdated={
                   handleNoteUpdated
                 }
@@ -244,7 +352,7 @@ const HomePage = () => {
         </div>
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default HomePage
+export default HomePage;

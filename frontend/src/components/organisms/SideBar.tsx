@@ -18,7 +18,11 @@ import { getTags, type TagWithCount } from "../../services/tagService";
 
 const INITIAL_TAG_COUNT = 5;
 
-const Sidebar = () => {
+type SidebarProps = {
+  onNewNote: () => void;
+};
+
+const Sidebar = ({ onNewNote }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const [tags, setTags] = useState<TagWithCount[]>([]);
@@ -54,7 +58,7 @@ const Sidebar = () => {
   const visibleTags = tags.slice(startIndex, startIndex + INITIAL_TAG_COUNT);
 
   const hasMoreTags = startIndex + INITIAL_TAG_COUNT < tags.length;
-  
+
   return (
     <aside
       className={`
@@ -120,14 +124,15 @@ const Sidebar = () => {
       >
         <Button
           variant="primary"
+          onClick={onNewNote}
           className="
-            h-12
-            w-full
-            gap-2
-            rounded-2xl
-            font-body
-            text-[15px]
-          "
+              h-12
+              w-full
+              gap-2
+              rounded-2xl
+              font-body
+              text-[15px]
+            "
         >
           <Plus size={20} strokeWidth={1.8} />
 
@@ -192,7 +197,7 @@ const Sidebar = () => {
               text-gold-light
             "
           >
-            Categories
+            Tags
           </p>
         )}
 
@@ -238,37 +243,31 @@ const Sidebar = () => {
           )}
         </div>
 
-{/* View More */}
+        {/* View More */}
 
-{!collapsed &&
-  tags.length >
-    INITIAL_TAG_COUNT && (
-    <div className="mt-4 px-1">
-      <Button
-        variant="ghost"
-        onClick={() => {
-          if (hasMoreTags) {
-            setTagPage(
-              (current) => current + 1,
-            )
-          } else {
-            setTagPage(0)
-          }
-        }}
-        className="
+        {!collapsed && tags.length > INITIAL_TAG_COUNT && (
+          <div className="mt-4 px-1">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (hasMoreTags) {
+                  setTagPage((current) => current + 1);
+                } else {
+                  setTagPage(0);
+                }
+              }}
+              className="
           h-9
           w-full
           text-sm
           text-gold-light
           hover:!bg-leather-light
         "
-      >
-        {hasMoreTags
-          ? "View more"
-          : "Back to top"}
-      </Button>
-    </div>
-  )}
+            >
+              {hasMoreTags ? "View more" : "Back to top"}
+            </Button>
+          </div>
+        )}
       </section>
     </aside>
   );

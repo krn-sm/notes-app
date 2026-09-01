@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
-import NoteCard from "../molecules/NoteCard"
-import ConfirmationModal from "../organisms/ConfirmationModal"
+import NoteCard from "../molecules/NoteCard";
+import Pagination from "../molecules/Pagination";
+import ConfirmationModal from "../organisms/ConfirmationModal";
 
 import {
   deleteNote,
@@ -10,63 +11,79 @@ import {
   restoreNote,
   updateNote,
   type Note,
-} from "../../services/noteService"
+} from "../../services/noteService";
 
 type NoteFilters = {
-  favorite?: boolean
-  deleted?: boolean
-  tag_id?: number
-}
+  favorite?: boolean;
+  deleted?: boolean;
+  tag_id?: number;
+};
 
 type NoteListProps = {
-  variant?: "grid" | "sidebar"
-  selectedNoteId?: number | null
-  onNoteClick: (note: Note) => void
-  filters?: NoteFilters
-  searchQuery?: string
-}
+  variant?: "grid" | "sidebar";
+  selectedNoteId?: number | null;
+
+  onNoteClick: (
+    note: Note,
+  ) => void;
+
+  filters?: NoteFilters;
+
+  searchQuery?: string;
+};
+
+const NOTES_PER_PAGE = 8;
 
 const formatDate = (
   dateString: string,
 ) => {
-  const date = new Date(dateString)
-  const now = new Date()
+  const date = new Date(
+    dateString,
+  );
+
+  const now = new Date();
 
   const difference =
-    now.getTime() - date.getTime()
+    now.getTime() -
+    date.getTime();
 
   const minutes = Math.floor(
-    difference / (1000 * 60),
-  )
+    difference /
+      (1000 * 60),
+  );
 
   const hours = Math.floor(
-    difference / (1000 * 60 * 60),
-  )
+    difference /
+      (1000 * 60 * 60),
+  );
 
   const days = Math.floor(
-    difference / (1000 * 60 * 60 * 24),
-  )
+    difference /
+      (1000 * 60 * 60 * 24),
+  );
 
   if (minutes < 1) {
-    return "Just now"
+    return "Just now";
   }
 
   if (minutes < 60) {
-    return `${minutes} min ago`
+    return `${minutes} min ago`;
   }
 
   if (hours < 24) {
     return `${hours} hour${
-      hours > 1 ? "s" : ""
-    } ago`
+      hours > 1
+        ? "s"
+        : ""
+    } ago`;
   }
 
   if (days === 1) {
-    return "Yesterday"
+    return "Yesterday";
   }
 
   if (days < 7) {
-    return `${days} days ago`
+    return `${days} days ago`;
   }
 
   return date.toLocaleDateString(
@@ -74,144 +91,220 @@ const formatDate = (
     {
       month: "short",
       day: "numeric",
+
       year:
         date.getFullYear() !==
         now.getFullYear()
           ? "numeric"
           : undefined,
     },
-  )
-}
+  );
+};
 
 const NoteList = ({
   variant = "grid",
+
   selectedNoteId = null,
+
   onNoteClick,
+
   filters = {},
+
   searchQuery = "",
 }: NoteListProps) => {
   const {
     favorite,
     deleted,
     tag_id,
-  } = filters
+  } = filters;
 
-  const [notes, setNotes] =
-    useState<Note[]>([])
+  const [
+    notes,
+    setNotes,
+  ] = useState<Note[]>([]);
 
-  const [isLoading, setIsLoading] =
-    useState(true)
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
 
-  const [error, setError] =
-    useState("")
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(1);
+
+  const [
+    totalPages,
+    setTotalPages,
+  ] = useState(1);
 
   const [
     noteToDelete,
     setNoteToDelete,
-  ] = useState<Note | null>(null)
+  ] = useState<Note | null>(
+    null,
+  );
 
   const [
     noteToRestore,
     setNoteToRestore,
-  ] = useState<Note | null>(null)
+  ] = useState<Note | null>(
+    null,
+  );
 
-  const [isDeleting, setIsDeleting] =
-    useState(false)
+  const [
+    isDeleting,
+    setIsDeleting,
+  ] = useState(false);
 
   const [
     isRestoring,
     setIsRestoring,
-  ] = useState(false)
+  ] = useState(false);
 
   const [
     debouncedSearchQuery,
     setDebouncedSearchQuery,
-  ] = useState(searchQuery)
+  ] = useState(
+    searchQuery,
+  );
+
+  /*
+   * Reset to page 1 when
+   * filters or search changes.
+   */
+
+  /*
+   * Debounce search.
+   */
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearchQuery(
-        searchQuery,
-      )
-    }, 400)
+    const timeout =
+      setTimeout(() => {
+        setDebouncedSearchQuery(
+          searchQuery,
+        );
+      }, 400);
 
     return () => {
-      clearTimeout(timeout)
-    }
-  }, [searchQuery])
+      clearTimeout(timeout);
+    };
+  }, [searchQuery]);
+
+  /*
+   * Load notes.
+   */
 
   useEffect(() => {
-    const loadNotes = async () => {
-      try {
-        setIsLoading(true)
-        setError("")
+    const loadNotes =
+      async () => {
+        try {
+          setIsLoading(true);
 
-        const response =
-          await getNotes({
-            favorite,
-            deleted,
-            tag_id,
-            q:
-              debouncedSearchQuery ||
-              undefined,
-          })
+          setError("");
 
-        setNotes(response.items)
-      } catch (error) {
-        console.error(error)
+          const response =
+            await getNotes({
+              favorite,
 
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to load notes",
-        )
-      } finally {
-        setIsLoading(false)
-      }
-    }
+              deleted,
 
-    loadNotes()
+              tag_id,
+
+              q:
+                debouncedSearchQuery ||
+                undefined,
+
+              page:
+                currentPage,
+
+              limit:
+                NOTES_PER_PAGE,
+            });
+
+          setNotes(
+            response.items,
+          );
+
+          setTotalPages(
+            response.total_pages,
+          );
+        } catch (error) {
+          console.error(
+            error,
+          );
+
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to load notes",
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+    loadNotes();
   }, [
     favorite,
     deleted,
     tag_id,
     debouncedSearchQuery,
-  ])
+    currentPage,
+  ]);
+
+  /*
+   * Keep selected note first
+   * in sidebar mode.
+   */
 
   const sortedNotes = [
     ...notes,
   ].sort((a, b) => {
-    if (a.id === selectedNoteId) {
-      return -1
+    if (
+      a.id ===
+      selectedNoteId
+    ) {
+      return -1;
     }
 
-    if (b.id === selectedNoteId) {
-      return 1
+    if (
+      b.id ===
+      selectedNoteId
+    ) {
+      return 1;
     }
 
-    return 0
-  })
+    return 0;
+  });
 
   const displayedNotes =
-  variant === "sidebar"
-    ? sortedNotes.slice(0, 4)
-    : sortedNotes
-  
+    variant === "sidebar"
+      ? sortedNotes.slice(0, 4)
+      : sortedNotes;
+
   const noteMatchesFilters = (
     note: Note,
   ) => {
     if (
       favorite !== undefined &&
-      note.is_favorite !== favorite
+      note.is_favorite !==
+        favorite
     ) {
-      return false
+      return false;
     }
 
     if (
       deleted !== undefined &&
-      note.is_deleted !== deleted
+      note.is_deleted !==
+        deleted
     ) {
-      return false
+      return false;
     }
 
     if (
@@ -221,14 +314,16 @@ const NoteList = ({
           tag.id === tag_id,
       )
     ) {
-      return false
+      return false;
     }
 
-    return true
-  }
+    return true;
+  };
 
   const handleFavoriteToggle =
-    async (note: Note) => {
+    async (
+      note: Note,
+    ) => {
       try {
         const updatedNote =
           await updateNote(
@@ -237,35 +332,43 @@ const NoteList = ({
               is_favorite:
                 !note.is_favorite,
             },
-          )
+          );
 
         setNotes(
-          (currentNotes) => {
+          (
+            currentNotes,
+          ) => {
             if (
               !noteMatchesFilters(
                 updatedNote,
               )
             ) {
               return currentNotes.filter(
-                (currentNote) =>
+                (
+                  currentNote,
+                ) =>
                   currentNote.id !==
                   updatedNote.id,
-              )
+              );
             }
 
             return currentNotes.map(
-              (currentNote) =>
+              (
+                currentNote,
+              ) =>
                 currentNote.id ===
                 updatedNote.id
                   ? updatedNote
                   : currentNote,
-            )
+            );
           },
-        )
+        );
       } catch (error) {
-        console.error(error)
+        console.error(
+          error,
+        );
       }
-    }
+    };
 
   const handleDeleteClick = (
     noteId: number,
@@ -274,14 +377,14 @@ const NoteList = ({
       notes.find(
         (note) =>
           note.id === noteId,
-      )
+      );
 
     if (selectedNote) {
       setNoteToDelete(
         selectedNote,
-      )
+      );
     }
-  }
+  };
 
   const handleRestoreClick = (
     noteId: number,
@@ -290,96 +393,170 @@ const NoteList = ({
       notes.find(
         (note) =>
           note.id === noteId,
-      )
+      );
 
     if (selectedNote) {
       setNoteToRestore(
         selectedNote,
-      )
+      );
     }
-  }
+  };
 
   const handleConfirmDelete =
     async () => {
       if (!noteToDelete) {
-        return
+        return;
       }
 
       try {
-        setIsDeleting(true)
-        setError("")
+        setIsDeleting(true);
+
+        setError("");
 
         if (
           noteToDelete.is_deleted
         ) {
           await permanentlyDeleteNote(
             noteToDelete.id,
-          )
+          );
         } else {
           await deleteNote(
             noteToDelete.id,
-          )
+          );
         }
 
-        setNotes(
-          (currentNotes) =>
-            currentNotes.filter(
-              (note) =>
-                note.id !==
-                noteToDelete.id,
-            ),
-        )
+        /*
+         * Reload current page
+         * after deletion.
+         */
 
-        setNoteToDelete(null)
+        const response =
+          await getNotes({
+            favorite,
+            deleted,
+            tag_id,
+
+            q:
+              debouncedSearchQuery ||
+              undefined,
+
+            page:
+              currentPage,
+
+            limit:
+              NOTES_PER_PAGE,
+          });
+
+        /*
+         * If we deleted the last
+         * note on a page, go back.
+         */
+
+        if (
+          response.items.length ===
+            0 &&
+          currentPage > 1
+        ) {
+          setCurrentPage(
+            (page) =>
+              page - 1,
+          );
+        } else {
+          setNotes(
+            response.items,
+          );
+
+          setTotalPages(
+            response.total_pages,
+          );
+        }
+
+        setNoteToDelete(
+          null,
+        );
       } catch (error) {
-        console.error(error)
+        console.error(
+          error,
+        );
 
         setError(
           error instanceof Error
             ? error.message
             : "Failed to delete note",
-        )
+        );
       } finally {
-        setIsDeleting(false)
+        setIsDeleting(false);
       }
-    }
+    };
 
   const handleConfirmRestore =
     async () => {
       if (!noteToRestore) {
-        return
+        return;
       }
 
       try {
-        setIsRestoring(true)
-        setError("")
+        setIsRestoring(true);
+
+        setError("");
 
         await restoreNote(
           noteToRestore.id,
-        )
+        );
 
-        setNotes(
-          (currentNotes) =>
-            currentNotes.filter(
-              (note) =>
-                note.id !==
-                noteToRestore.id,
-            ),
-        )
+        const response =
+          await getNotes({
+            favorite,
+            deleted,
+            tag_id,
 
-        setNoteToRestore(null)
+            q:
+              debouncedSearchQuery ||
+              undefined,
+
+            page:
+              currentPage,
+
+            limit:
+              NOTES_PER_PAGE,
+          });
+
+        if (
+          response.items.length ===
+            0 &&
+          currentPage > 1
+        ) {
+          setCurrentPage(
+            (page) =>
+              page - 1,
+          );
+        } else {
+          setNotes(
+            response.items,
+          );
+
+          setTotalPages(
+            response.total_pages,
+          );
+        }
+
+        setNoteToRestore(
+          null,
+        );
       } catch (error) {
-        console.error(error)
+        console.error(
+          error,
+        );
 
         setError(
           error instanceof Error
             ? error.message
             : "Failed to restore note",
-        )
+        );
       } finally {
-        setIsRestoring(false)
+        setIsRestoring(false);
       }
-    }
+    };
 
   if (isLoading) {
     return (
@@ -392,7 +569,7 @@ const NoteList = ({
       >
         Loading notes...
       </p>
-    )
+    );
   }
 
   if (
@@ -409,13 +586,18 @@ const NoteList = ({
       >
         {error}
       </p>
-    )
+    );
   }
 
   return (
     <>
       {notes.length === 0 ? (
-        <div className="py-16 text-center">
+        <div
+          className="
+            py-16
+            text-center
+          "
+        >
           <h2
             className="
               font-display
@@ -438,99 +620,140 @@ const NoteList = ({
           </p>
         </div>
       ) : (
-        <section
-          className={`
-            transition-all
-            duration-300
+        <>
+          <section
+            className={`
+              transition-all
+              duration-300
 
-            ${
-              variant === "grid"
-                ? `
-                  grid
-                  gap-6
-                  sm:grid-cols-2
-                  xl:grid-cols-3
-                  2xl:grid-cols-4
-                `
-                : `
-                  flex
-                  h-full
-                  min-h-0
-                  flex-col
-                  gap-3
-                  overflow-y-auto
-                  pr-1
-                `
-            }
-          `}
-        >
-          {displayedNotes.map((note) => (
-              <NoteCard
-                key={note.id}
-                id={note.id}
-                title={note.title}
-                preview={note.content}
-                date={formatDate(
-                  note.updated_at,
-                )}
-                tags={note.tags}
-                isFavorite={
-                  note.is_favorite
-                }
-                isDeleted={
-                  note.is_deleted
-                }
-                isSelected={
-                  note.id ===
-                  selectedNoteId
-                }
+              ${
+                variant === "grid"
+                  ? `
+                    grid
+                    gap-6
+                    sm:grid-cols-2
+                    xl:grid-cols-3
+                    2xl:grid-cols-4
+                  `
+                  : `
+                    flex
+                    h-full
+                    min-h-0
+                    flex-col
+                    gap-3
+                    overflow-y-auto
+                    pr-1
+                  `
+              }
+            `}
+          >
+            {displayedNotes.map(
+              (note) => (
+                <NoteCard
+                  key={note.id}
 
-                variant={variant}
+                  id={note.id}
 
-                onClick={() =>
-                  onNoteClick(note)
-                }
+                  title={note.title}
 
-                onFavoriteToggle={(
-                  id,
-                ) => {
-                  const selectedNote =
-                    notes.find(
-                      (note) =>
-                        note.id === id,
-                    )
+                  preview={
+                    note.content
+                  }
 
-                  if (
-                    selectedNote
-                  ) {
-                    handleFavoriteToggle(
-                      selectedNote,
+                  date={formatDate(
+                    note.updated_at,
+                  )}
+
+                  tags={note.tags}
+
+                  isFavorite={
+                    note.is_favorite
+                  }
+
+                  isDeleted={
+                    note.is_deleted
+                  }
+
+                  isSelected={
+                    note.id ===
+                    selectedNoteId
+                  }
+
+                  variant={
+                    variant
+                  }
+
+                  onClick={() =>
+                    onNoteClick(
+                      note,
                     )
                   }
-                }}
 
-                onDelete={
-                  handleDeleteClick
-                }
+                  onFavoriteToggle={(
+                    id,
+                  ) => {
+                    const selectedNote =
+                      notes.find(
+                        (note) =>
+                          note.id ===
+                          id,
+                      );
 
-                onRestore={
-                  handleRestoreClick
-                }
-              />
-            ),
+                    if (
+                      selectedNote
+                    ) {
+                      handleFavoriteToggle(
+                        selectedNote,
+                      );
+                    }
+                  }}
+
+                  onDelete={
+                    handleDeleteClick
+                  }
+
+                  onRestore={
+                    handleRestoreClick
+                  }
+                />
+              ),
+            )}
+          </section>
+
+          {/*
+           * Only show pagination
+           * in grid mode.
+           */}
+
+          {variant === "grid" && (
+            <Pagination
+              currentPage={
+                currentPage
+              }
+
+              totalPages={
+                totalPages
+              }
+
+              onPageChange={
+                setCurrentPage
+              }
+            />
           )}
-        </section>
+        </>
       )}
 
       <ConfirmationModal
         isOpen={
           noteToDelete !== null
         }
+
         title={
           noteToDelete?.is_deleted
             ? "Permanently delete note?"
             : "Move note to trash?"
         }
+
         description={
           noteToDelete
             ? noteToDelete.is_deleted
@@ -538,19 +761,27 @@ const NoteList = ({
               : `"${noteToDelete.title}" will be moved to the trash.`
             : ""
         }
+
         cancelLabel="Cancel"
+
         confirmLabel={
           noteToDelete?.is_deleted
             ? "Delete Permanently"
             : "Move to Trash"
         }
+
         onCancel={() =>
           setNoteToDelete(null)
         }
+
         onConfirm={
           handleConfirmDelete
         }
-        isLoading={isDeleting}
+
+        isLoading={
+          isDeleting
+        }
+
         danger
       />
 
@@ -558,24 +789,33 @@ const NoteList = ({
         isOpen={
           noteToRestore !== null
         }
+
         title="Restore note?"
+
         description={
           noteToRestore
             ? `"${noteToRestore.title}" will be restored to your notes.`
             : ""
         }
+
         cancelLabel="Cancel"
+
         confirmLabel="Restore"
+
         onCancel={() =>
           setNoteToRestore(null)
         }
+
         onConfirm={
           handleConfirmRestore
         }
-        isLoading={isRestoring}
+
+        isLoading={
+          isRestoring
+        }
       />
     </>
-  )
-}
+  );
+};
 
-export default NoteList
+export default NoteList;

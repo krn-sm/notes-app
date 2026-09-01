@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Cookie, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.auth.security import create_access_token
+from app.auth.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
 from app.auth.dependencies import get_current_user
 from app.models import User
 
@@ -91,7 +91,7 @@ def login_user_endpoint(
         httponly=True,
         secure=False,
         samesite="lax",
-        max_age=900,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
     return None

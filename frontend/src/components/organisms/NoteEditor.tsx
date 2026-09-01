@@ -1,6 +1,5 @@
 import { ArrowLeft, CalendarDays } from "lucide-react";
-
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import Button from "../atoms/Button";
 import EditorTitle from "../atoms/EditorTitle";
@@ -18,7 +17,12 @@ import ConfirmationModal from "./ConfirmationModal";
 
 import { createTag } from "../../services/tagService";
 
-import { deleteNote, updateNote, type Note } from "../../services/noteService";
+import {
+  createNote,
+  deleteNote,
+  updateNote,
+  type Note,
+} from "../../services/noteService";
 
 type Tag = {
   id: number;
@@ -26,86 +30,117 @@ type Tag = {
 };
 
 type NoteEditorProps = {
-  note: Note;
+  note?: Note;
+  isNew?: boolean;
+
   onClose: () => void;
-  onNoteUpdated: (note: Note) => void;
-  onNoteDeleted: (noteId: number) => void;
+
+  onNoteCreated?: (note: Note) => void;
+  onNoteUpdated?: (note: Note) => void;
+  onNoteDeleted?: (noteId: number) => void;
 };
 
 const NoteEditor = ({
   note,
+  isNew = false,
   onClose,
+  onNoteCreated,
   onNoteUpdated,
   onNoteDeleted,
 }: NoteEditorProps) => {
-  const [title, setTitle] = useState(note.title);
+  const [title, setTitle] = useState(
+    note?.title ?? "",
+  );
 
-  const [content, setContent] = useState(note.content);
+  const [content, setContent] = useState(
+    note?.content ?? "",
+  );
 
   const [tags, setTags] = useState<Tag[]>(
-    note.tags.map((tag) => ({
+    note?.tags.map((tag) => ({
       id: tag.id,
       name: tag.name,
-    })),
+    })) ?? [],
   );
 
   const [tagInput, setTagInput] = useState("");
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] =
+    useState(isNew);
 
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] =
+    useState(false);
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] =
+    useState(false);
 
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] =
+    useState(false);
 
-  const editorRef = useRef<EditorContentHandle>(null);
+  const [isCopied, setIsCopied] =
+    useState(false);
+
+  const [formatState, setFormatState] =
+    useState<EditorFormatState>({
+      bold: false,
+      italic: false,
+      underline: false,
+      bulletList: false,
+      orderedList: false,
+    });
+
+  const editorRef =
+    useRef<EditorContentHandle>(null);
 
   const savedNoteRef = useRef({
-    title: note.title,
-    content: note.content,
-    tags: note.tags.map((tag) => tag.id),
+    title: note?.title ?? "",
+    content: note?.content ?? "",
+    tags:
+      note?.tags.map(
+        (tag) => tag.id,
+      ) ?? [],
   });
 
-  const formattedDate = new Date(note.updated_at).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const formattedDate = note
+    ? new Date(
+        note.updated_at,
+      ).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "New note";
 
-  const [formatState, setFormatState] = useState<EditorFormatState>({
-    bold: false,
-    italic: false,
-    underline: false,
-    bulletList: false,
-    orderedList: false,
-  });
+  const handleTitleChange = (
+    value: string,
+  ) => {
+    setTitle(value);
+    setIsEditing(true);
+  };
 
-  useEffect(() => {
-    const savedNote = savedNoteRef.current;
-
-    const currentTagIds = tags.map((tag) => tag.id);
-
-    const hasChanges =
-      title !== savedNote.title ||
-      content !== savedNote.content ||
-      JSON.stringify(currentTagIds) !== JSON.stringify(savedNote.tags);
-
-    setIsEditing(hasChanges);
-  }, [title, content, tags]);
+  const handleContentChange = (
+    value: string,
+  ) => {
+    setContent(value);
+    setIsEditing(true);
+  };
 
   const handleAddTag = async () => {
-    const trimmedTag = tagInput.trim();
+    const trimmedTag =
+      tagInput.trim();
 
     if (!trimmedTag) {
       return;
     }
 
-    const tagAlreadyExists = tags.some(
-      (tag) => tag.name.toLowerCase() === trimmedTag.toLowerCase(),
-    );
+    const tagAlreadyExists =
+      tags.some(
+        (tag) =>
+          tag.name.toLowerCase() ===
+          trimmedTag.toLowerCase(),
+      );
 
     if (tagAlreadyExists) {
       setTagInput("");
@@ -113,64 +148,136 @@ const NoteEditor = ({
     }
 
     try {
-      const newTag = await createTag({
-        name: trimmedTag,
-      });
+      const newTag =
+        await createTag({
+          name: trimmedTag,
+        });
 
-      setTags((currentTags) => [...currentTags, newTag]);
+      setTags(
+        (currentTags) => [
+          ...currentTags,
+          newTag,
+        ],
+      );
 
       setTagInput("");
+
+      setIsEditing(true);
     } catch (error) {
-      console.error("Failed to create tag:", error);
+      console.error(
+        "Failed to create tag:",
+        error,
+      );
     }
   };
 
-  const handleRemoveTag = (tagId: number) => {
-    setTags((currentTags) => currentTags.filter((tag) => tag.id !== tagId));
+  const handleRemoveTag = (
+    tagId: number,
+  ) => {
+    setTags(
+      (currentTags) =>
+        currentTags.filter(
+          (tag) =>
+            tag.id !== tagId,
+        ),
+    );
+
+    setIsEditing(true);
   };
 
   const handleSave = async () => {
     try {
       setIsSaving(true);
 
-      const updatedNote = await updateNote(note.id, {
-        title,
-        content,
-        tag_ids: tags.map((tag) => tag.id),
-      });
+      if (isNew) {
+        const createdNote =
+          await createNote({
+            title:
+              title.trim() ||
+              "Untitled Note",
+            content,
+            tag_ids: tags.map(
+              (tag) => tag.id,
+            ),
+          });
+
+        onNoteCreated?.(
+          createdNote,
+        );
+
+        return;
+      }
+
+      if (!note) {
+        return;
+      }
+
+      const updatedNote =
+        await updateNote(
+          note.id,
+          {
+            title,
+            content,
+            tag_ids: tags.map(
+              (tag) => tag.id,
+            ),
+          },
+        );
 
       savedNoteRef.current = {
         title: updatedNote.title,
-        content: updatedNote.content,
-        tags: updatedNote.tags.map((tag) => tag.id),
+        content:
+          updatedNote.content,
+        tags:
+          updatedNote.tags.map(
+            (tag) => tag.id,
+          ),
       };
 
-      onNoteUpdated(updatedNote);
+      onNoteUpdated?.(
+        updatedNote,
+      );
 
       setIsEditing(false);
     } catch (error) {
-      console.error("Failed to save note:", error);
+      console.error(
+        "Failed to save note:",
+        error,
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleUndo = () => {
-    document.execCommand("undo");
+    editorRef.current?.focus();
+
+    document.execCommand(
+      "undo",
+    );
   };
 
   const handleRedo = () => {
-    document.execCommand("redo");
+    editorRef.current?.focus();
+
+    document.execCommand(
+      "redo",
+    );
   };
 
-  const handleFormat = (command: string) => {
-    editorRef.current?.format(command);
+  const handleFormat = (
+    command: string,
+  ) => {
+    editorRef.current?.format(
+      command,
+    );
   };
-  const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(`${title}\n\n${content}`);
+      await navigator.clipboard.writeText(
+        `${title}\n\n${content}`,
+      );
 
       setIsCopied(true);
 
@@ -178,7 +285,10 @@ const NoteEditor = ({
         setIsCopied(false);
       }, 2000);
     } catch (error) {
-      console.error("Failed to copy note:", error);
+      console.error(
+        "Failed to copy note:",
+        error,
+      );
     }
   };
 
@@ -186,23 +296,35 @@ const NoteEditor = ({
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      setIsDeleting(true);
+  const handleConfirmDelete =
+    async () => {
+      if (!note) {
+        return;
+      }
 
-      await deleteNote(note.id);
+      try {
+        setIsDeleting(true);
 
-      setIsDeleteModalOpen(false);
+        await deleteNote(
+          note.id,
+        );
 
-      onNoteDeleted(note.id);
+        setIsDeleteModalOpen(false);
 
-      onClose();
-    } catch (error) {
-      console.error("Failed to delete note:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+        onNoteDeleted?.(
+          note.id,
+        );
+
+        onClose();
+      } catch (error) {
+        console.error(
+          "Failed to delete note:",
+          error,
+        );
+      } finally {
+        setIsDeleting(false);
+      }
+    };
 
   return (
     <>
@@ -265,11 +387,25 @@ const NoteEditor = ({
             onSave={handleSave}
             onUndo={handleUndo}
             onRedo={handleRedo}
-            onBold={() => handleFormat("bold")}
-            onItalic={() => handleFormat("italic")}
-            onUnderline={() => handleFormat("underline")}
-            onBulletList={() => handleFormat("insertUnorderedList")}
-            onOrderedList={() => handleFormat("insertOrderedList")}
+            onBold={() =>
+              handleFormat("bold")
+            }
+            onItalic={() =>
+              handleFormat("italic")
+            }
+            onUnderline={() =>
+              handleFormat("underline")
+            }
+            onBulletList={() =>
+              handleFormat(
+                "insertUnorderedList",
+              )
+            }
+            onOrderedList={() =>
+              handleFormat(
+                "insertOrderedList",
+              )
+            }
             onCopy={handleCopy}
             onDelete={handleDeleteClick}
           />
@@ -307,7 +443,12 @@ const NoteEditor = ({
                 flex-1
               "
             >
-              <EditorTitle value={title} onChange={setTitle} />
+              <EditorTitle
+                value={title}
+                onChange={
+                  handleTitleChange
+                }
+              />
             </div>
 
             <div
@@ -324,7 +465,9 @@ const NoteEditor = ({
             >
               <CalendarDays size={16} />
 
-              <span>{formattedDate}</span>
+              <span>
+                {formattedDate}
+              </span>
             </div>
           </div>
 
@@ -340,8 +483,12 @@ const NoteEditor = ({
             <EditorContent
               ref={editorRef}
               value={content}
-              onChange={setContent}
-              onFormatChange={setFormatState}
+              onChange={
+                handleContentChange
+              }
+              onFormatChange={
+                setFormatState
+              }
             />
           </div>
 
@@ -360,29 +507,45 @@ const NoteEditor = ({
               value={tagInput}
               onChange={setTagInput}
               onAdd={handleAddTag}
-              onRemove={handleRemoveTag}
+              onRemove={
+                handleRemoveTag
+              }
             />
           </div>
 
           {/* Footer */}
 
           <div className="shrink-0">
-            <EditorFooter content={content} />
+            <EditorFooter
+              content={content}
+            />
           </div>
         </div>
       </section>
 
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        title="Move note to trash?"
-        description={`"${title}" will be moved to the trash.`}
-        cancelLabel="Cancel"
-        confirmLabel="Move to Trash"
-        onCancel={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        isLoading={isDeleting}
-        danger
-      />
+      {/* Delete Confirmation */}
+
+      {!isNew && (
+        <ConfirmationModal
+          isOpen={
+            isDeleteModalOpen
+          }
+          title="Move note to trash?"
+          description={`"${title}" will be moved to the trash.`}
+          cancelLabel="Cancel"
+          confirmLabel="Move to Trash"
+          onCancel={() =>
+            setIsDeleteModalOpen(
+              false,
+            )
+          }
+          onConfirm={
+            handleConfirmDelete
+          }
+          isLoading={isDeleting}
+          danger
+        />
+      )}
     </>
   );
 };

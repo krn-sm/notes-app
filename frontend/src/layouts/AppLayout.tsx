@@ -1,47 +1,67 @@
-import { useEffect, useState } from "react"
-import { Outlet } from "react-router-dom"
+import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
 
-import Toast from "../components/molecules/Toast"
-import ProfileDrawer from "../components/organisms/ProfileDrawer"
-import SideBar from "../components/organisms/SideBar"
+import Toast from "../components/molecules/Toast";
+import ProfileDrawer from "../components/organisms/ProfileDrawer";
+import Sidebar from "../components/organisms/SideBar";
 
 import {
   getCurrentUser,
   type User,
-} from "../services/authService"
+} from "../services/authService";
 
 const AppLayout = () => {
   const [isProfileOpen, setIsProfileOpen] =
-    useState(false)
+    useState(false);
 
   const [user, setUser] =
-    useState<User | null>(null)
+    useState<User | null>(null);
 
   const [toastMessage, setToastMessage] =
-    useState("")
+    useState("");
 
-  const showToast = (message: string) => {
-    setToastMessage(message)
+  const [
+    isCreatingNote,
+    setIsCreatingNote,
+  ] = useState(false);
+
+  const [
+    newNoteKey,
+    setNewNoteKey,
+  ] = useState(0);
+
+  const handleNewNote = () => {
+    setIsCreatingNote(true);
+
+    setNewNoteKey(
+      (current) => current + 1,
+    );
+  };
+
+  const showToast = (
+    message: string,
+  ) => {
+    setToastMessage(message);
 
     setTimeout(() => {
-      setToastMessage("")
-    }, 3000)
-  }
+      setToastMessage("");
+    }, 3000);
+  };
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const currentUser =
-          await getCurrentUser()
+          await getCurrentUser();
 
-        setUser(currentUser)
+        setUser(currentUser);
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
-    }
+    };
 
-    loadUser()
-  }, [])
+    loadUser();
+  }, []);
 
   return (
     <div
@@ -53,6 +73,7 @@ const AppLayout = () => {
       "
     >
       {/* Sidebar */}
+
       <div
         className="
           relative
@@ -61,10 +82,13 @@ const AppLayout = () => {
           overflow-visible
         "
       >
-        <SideBar />
+        <Sidebar
+          onNewNote={handleNewNote}
+        />
       </div>
 
-      {/* Main area */}
+      {/* Main Area */}
+
       <main
         className="
           relative
@@ -83,12 +107,21 @@ const AppLayout = () => {
           <Outlet
             context={{
               user,
+
               onProfileClick: () =>
                 setIsProfileOpen(true),
+
+              isCreatingNote,
+
+              setIsCreatingNote,
+
+              newNoteKey,
             }}
           />
         </div>
       </main>
+
+      {/* Profile Drawer */}
 
       {user && (
         <ProfileDrawer
@@ -103,6 +136,8 @@ const AppLayout = () => {
         />
       )}
 
+      {/* Toast */}
+
       <Toast
         message={toastMessage}
         isVisible={Boolean(toastMessage)}
@@ -111,7 +146,7 @@ const AppLayout = () => {
         }
       />
     </div>
-  )
-}
+  );
+};
 
-export default AppLayout
+export default AppLayout;
