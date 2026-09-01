@@ -14,7 +14,7 @@ import Brand from "../molecules/Brand";
 import CategoryNavItem from "../molecules/CategoryNavItem";
 import NavItem from "../molecules/NavItem";
 
-import { getTags, type TagWithCount } from "../../services/tagService";
+import { deleteTag, getTags, type TagWithCount } from "../../services/tagService";
 
 const INITIAL_TAG_COUNT = 5;
 
@@ -59,6 +59,24 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
   const hasMoreTags = startIndex + INITIAL_TAG_COUNT < tags.length;
 
+  const handleDeleteTag = async (
+  tagId: number,
+) => {
+  try {
+    await deleteTag(tagId);
+
+    setTags((currentTags) =>
+      currentTags.filter(
+        (tag) => tag.id !== tagId,
+      ),
+    );
+  } catch (error) {
+    console.error(
+      "Failed to delete tag:",
+      error,
+    );
+  }
+};
   return (
     <aside
       className={`
@@ -227,6 +245,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
                 count={tag.note_count}
                 path={`/home/category/${tag.id}`}
                 collapsed={collapsed}
+                onDelete={() => handleDeleteTag(tag.id)}
               />
             ))}
 

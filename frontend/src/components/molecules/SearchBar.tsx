@@ -35,7 +35,7 @@ const SearchBar = ({
 
       <Input
         type="search"
-        placeholder="Search notes..."
+        placeholder="Search title, tags or content"
         value={value}
         onChange={(event) =>
           onChange(event.target.value)
