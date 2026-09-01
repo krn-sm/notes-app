@@ -26,6 +26,7 @@ type NoteListProps = {
   selectedNoteId?: number | null
   onNoteClick: (note: Note) => void
   filters?: NoteFilters
+  searchQuery?: string
 }
 
 const formatDate = (
@@ -90,6 +91,7 @@ const NoteList = ({
   selectedNoteId = null,
   onNoteClick,
   filters = {},
+  searchQuery = "",
 }: NoteListProps) => {
   const {
     favorite,
@@ -122,6 +124,21 @@ const NoteList = ({
   const [isRestoring, setIsRestoring] =
     useState(false)
 
+  const [
+  debouncedSearchQuery,
+  setDebouncedSearchQuery,
+] = useState(searchQuery)
+
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    setDebouncedSearchQuery(searchQuery)
+  }, 400)
+
+  return () => {
+    clearTimeout(timeout)
+  }
+}, [searchQuery])
+  
   useEffect(() => {
     const loadNotes = async () => {
       try {
@@ -133,6 +150,7 @@ const NoteList = ({
             favorite,
             deleted,
             tag_id,
+            q: debouncedSearchQuery || undefined,
           })
 
         setNotes(response.items)
@@ -154,6 +172,7 @@ const NoteList = ({
     favorite,
     deleted,
     tag_id,
+    debouncedSearchQuery,
   ])
 
   const noteMatchesFilters = (

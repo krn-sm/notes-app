@@ -1,20 +1,41 @@
-import { Grid2X2, List } from "lucide-react"
+import { useEffect, useState } from "react";
 
-import type { User } from "../../services/authService"
+import type { User } from "../../services/authService";
+import { getNotes } from "../../services/noteService";
 
-import Avatar from "../atoms/Avatar"
-import Button from "../atoms/Button"
-import SearchBar from "../molecules/SearchBar"
+import Avatar from "../atoms/Avatar";
+import Button from "../atoms/Button";
+import SearchBar from "../molecules/SearchBar";
 
 type AppHeaderProps = {
-  user: User | null
-  onProfileClick: () => void
-}
+  user: User | null;
+  onProfileClick: () => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+};
 
 const AppHeader = ({
   user,
   onProfileClick,
+  searchQuery,
+  onSearchChange,
 }: AppHeaderProps) => {
+  const [noteCount, setNoteCount] = useState(0);
+
+  useEffect(() => {
+    const loadNoteCount = async () => {
+      try {
+        const response = await getNotes();
+
+        setNoteCount(response.total);
+      } catch (error) {
+        console.error("Failed to load note count:", error);
+      }
+    };
+
+    loadNoteCount();
+  }, []);
+
   return (
     <header
       className="
@@ -39,7 +60,7 @@ const AppHeader = ({
             text-ink
           "
         >
-          Good morning, {user?.name ?? "there"}
+          Hello, {user?.name ?? "there"}
           <span className="ml-2 text-gold">☀</span>
         </h1>
 
@@ -51,72 +72,20 @@ const AppHeader = ({
             text-ink-muted
           "
         >
-          You have 23 notes
+          You have {noteCount} note{noteCount !== 1 ? "s" : ""}
         </p>
       </div>
 
       {/* Search */}
       <div className="w-full max-w-[300px]">
         <SearchBar
-          value=""
-          onChange={() => {}}
+          value={searchQuery}
+          onChange={onSearchChange}
         />
       </div>
 
       {/* Header Actions */}
       <div className="flex min-w-[260px] items-center justify-end gap-6">
-        {/* View Toggle */}
-        <div
-          className="
-            flex
-            h-11
-            overflow-hidden
-            rounded-xl
-            border
-            border-line
-            bg-paper-dark
-          "
-        >
-          <Button
-            variant="ghost"
-            aria-label="List view"
-            className="
-              h-full
-              w-11
-              !rounded-none
-              !px-0
-              !py-0
-              border-r
-              border-line
-              !bg-paper
-              !text-ink
-            "
-          >
-            <List
-              size={19}
-              strokeWidth={1.8}
-            />
-          </Button>
-
-          <Button
-            variant="ghost"
-            aria-label="Grid view"
-            className="
-              h-full
-              w-11
-              !rounded-none
-              !px-0
-              !py-0
-            "
-          >
-            <Grid2X2
-              size={18}
-              strokeWidth={1.7}
-            />
-          </Button>
-        </div>
-
-        {/* User Profile */}
         {user && (
           <Button
             variant="ghost"
@@ -128,7 +97,7 @@ const AppHeader = ({
               !py-1.5
             "
           >
-            <Avatar name={user?.name ?? ""} />
+            <Avatar name={user.name} />
 
             <span
               className="
@@ -144,7 +113,7 @@ const AppHeader = ({
         )}
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default AppHeader
+export default AppHeader;

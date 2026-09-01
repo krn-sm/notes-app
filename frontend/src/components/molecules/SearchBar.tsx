@@ -37,7 +37,9 @@ const SearchBar = ({
         type="search"
         placeholder="Search notes..."
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
         className="
           h-full
           min-w-0
@@ -46,27 +48,6 @@ const SearchBar = ({
           text-sm
         "
       />
-
-      <kbd
-        className="
-          ml-3
-          flex
-          h-6
-          w-6
-          shrink-0
-          items-center
-          justify-center
-          rounded-md
-          border
-          border-line
-          bg-paper
-          font-body
-          text-xs
-          text-ink-muted
-        "
-      >
-        /
-      </kbd>
     </div>
   )
 }

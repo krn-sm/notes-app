@@ -18,7 +18,7 @@ type AuthMode = "login" | "register";
 const AuthForm = () => {
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>("register");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
