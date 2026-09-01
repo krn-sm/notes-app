@@ -233,7 +233,7 @@ const Sidebar = () => {
                   text-gold-light/60
                 "
             >
-              No categories yet.
+              No tags yet.
             </p>
           )}
         </div>

@@ -1,197 +1,197 @@
-import { useState } from "react"
-
 import {
   Bold,
   Check,
-  CheckSquare,
-  ChevronDown,
+  Clipboard,
   Italic,
   List,
   ListOrdered,
-  Tag as TagIcon,
-  Type,
+  Redo2,
+  Trash2,
   Underline,
-} from "lucide-react"
+  Undo2,
+} from "lucide-react";
 
-import ToolbarButton from "../atoms/ToolbarButton"
+import type { EditorFormatState } from "./EditorContent";
+
+import ToolbarButton from "../atoms/ToolbarButton";
 
 type EditorToolbarProps = {
-  onBold: () => void
-  onItalic: () => void
-  onUnderline: () => void
-  onBulletList: () => void
-  onOrderedList: () => void
-  onChecklist: () => void
-  onFocusTags: () => void
-  onCycleTextSize: () => void
-  onSave: () => void
+  isEditing: boolean;
+  isSaving?: boolean;
+  isCopied?: boolean;
 
-  isBold?: boolean
-  isItalic?: boolean
-  isUnderline?: boolean
-  isBulletList?: boolean
-  isOrderedList?: boolean
+  formatState: EditorFormatState;
 
-  isSaving?: boolean
-}
+  onSave: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
 
-const Divider = () => (
-  <div
-    className="
-      mx-1.5
-      h-6
-      w-px
-      shrink-0
-      bg-line
-    "
-  />
-)
+  onBold: () => void;
+  onItalic: () => void;
+  onUnderline: () => void;
+  onBulletList: () => void;
+  onOrderedList: () => void;
+
+  onCopy: () => void;
+  onDelete: () => void;
+};
 
 const EditorToolbar = ({
+  isEditing,
+  isSaving = false,
+  isCopied = false,
+  formatState,
+  onSave,
+  onUndo,
+  onRedo,
   onBold,
   onItalic,
   onUnderline,
   onBulletList,
   onOrderedList,
-  onChecklist,
-  onFocusTags,
-  onCycleTextSize,
-  onSave,
-
-  isBold = false,
-  isItalic = false,
-  isUnderline = false,
-  isBulletList = false,
-  isOrderedList = false,
-
-  isSaving = false,
+  onCopy,
+  onDelete,
 }: EditorToolbarProps) => {
-  const [textSizeLabel, setTextSizeLabel] =
-    useState<"S" | "M" | "L">("M")
-
-  const handleTextSizeClick = () => {
-    setTextSizeLabel((current) => {
-      if (current === "S") return "M"
-      if (current === "M") return "L"
-
-      return "S"
-    })
-
-    onCycleTextSize()
-  }
-
   return (
     <div
       className="
+        ml-auto
         flex
-        w-full
-        shrink-0
         items-center
-        gap-1
+        gap-2
       "
     >
-      <ToolbarButton
-        ariaLabel="Text size"
-        onClick={handleTextSizeClick}
-        className="
-          !w-auto
-          gap-1
-          px-3
-        "
-      >
-        <Type size={20} />
+      {isEditing ? (
+        <>
+          <ToolbarButton ariaLabel="Undo" onClick={onUndo}>
+            <Undo2 size={22} />
+          </ToolbarButton>
 
-        <span className="text-xs font-semibold">
-          {textSizeLabel}
-        </span>
+          <ToolbarButton ariaLabel="Redo" onClick={onRedo}>
+            <Redo2 size={22} />
+          </ToolbarButton>
 
-        <ChevronDown size={14} />
-      </ToolbarButton>
+          <div
+            className="
+              mx-1
+              h-7
+              w-px
+              bg-line
+            "
+          />
 
-      <Divider />
+          <ToolbarButton
+            ariaLabel="Bold"
+            onClick={onBold}
+            isActive={formatState.bold}
+          >
+            <Bold size={22} />
+          </ToolbarButton>
 
-      <ToolbarButton
-        ariaLabel="Bold"
-        onClick={onBold}
-        isActive={isBold}
-      >
-        <Bold size={21} />
-      </ToolbarButton>
+          <ToolbarButton
+            ariaLabel="Italic"
+            onClick={onItalic}
+            isActive={formatState.italic}
+          >
+            <Italic size={22} />
+          </ToolbarButton>
 
-      <ToolbarButton
-        ariaLabel="Italic"
-        onClick={onItalic}
-        isActive={isItalic}
-      >
-        <Italic size={21} />
-      </ToolbarButton>
+          <ToolbarButton
+            ariaLabel="Underline"
+            onClick={onUnderline}
+            isActive={formatState.underline}
+          >
+            <Underline size={22} />
+          </ToolbarButton>
 
-      <ToolbarButton
-        ariaLabel="Underline"
-        onClick={onUnderline}
-        isActive={isUnderline}
-      >
-        <Underline size={21} />
-      </ToolbarButton>
+          <div
+            className="
+              mx-1
+              h-7
+              w-px
+              bg-line
+            "
+          />
 
-      <Divider />
+          <ToolbarButton
+            ariaLabel="Bullet list"
+            onClick={onBulletList}
+            isActive={formatState.bulletList}
+          >
+            <List size={22} />
+          </ToolbarButton>
 
-      <ToolbarButton
-        ariaLabel="Bullet list"
-        onClick={onBulletList}
-        isActive={isBulletList}
-      >
-        <List size={21} />
-      </ToolbarButton>
+          <ToolbarButton
+            ariaLabel="Numbered list"
+            onClick={onOrderedList}
+            isActive={formatState.orderedList}
+          >
+            <ListOrdered size={22} />
+          </ToolbarButton>
 
-      <ToolbarButton
-        ariaLabel="Numbered list"
-        onClick={onOrderedList}
-        isActive={isOrderedList}
-      >
-        <ListOrdered size={21} />
-      </ToolbarButton>
+          <div
+            className="
+              mx-1
+              h-7
+              w-px
+              bg-line
+            "
+          />
 
-      <ToolbarButton
-        ariaLabel="Checklist"
-        onClick={onChecklist}
-      >
-        <CheckSquare size={21} />
-      </ToolbarButton>
+          <ToolbarButton
+            ariaLabel="Save note"
+            onClick={onSave}
+            className="
+              !rounded-lg
+              !bg-ink
+              !text-paper
+              hover:!bg-leather-light
+            "
+          >
+            <Check size={23} strokeWidth={2.5} />
+          </ToolbarButton>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            {isCopied && (
+              <span
+                className="
+        text-sm
+        font-body
+        text-ink-muted
+        animate-in
+        fade-in
+        duration-200
+      "
+              >
+                Copied!
+              </span>
+            )}
 
-      <Divider />
+            <ToolbarButton ariaLabel="Copy note" onClick={onCopy}>
+              <Clipboard size={22} />
+            </ToolbarButton>
+          </div>
 
-      <ToolbarButton
-        ariaLabel="Add tag"
-        onClick={onFocusTags}
-      >
-        <TagIcon size={20} />
-      </ToolbarButton>
-
-      {/* Push save button to right */}
-      <div className="ml-auto" />
-
-      <ToolbarButton
-        ariaLabel="Save note"
-        onClick={onSave}
-        className="
-          !rounded-lg
-          !bg-ink
-          !text-paper
-          hover:!bg-leather-light
-        "
-      >
-        <Check
-          size={22}
-          strokeWidth={2.5}
-        />
-      </ToolbarButton>
+          <ToolbarButton
+            ariaLabel="Delete note"
+            onClick={onDelete}
+            className="
+              hover:!bg-red-50
+              hover:!text-red-500
+            "
+          >
+            <Trash2 size={22} />
+          </ToolbarButton>
+        </>
+      )}
 
       {isSaving && (
         <span
           className="
-            mr-2
-            text-xs
+            ml-2
+            text-sm
             text-ink-muted
           "
         >
@@ -199,7 +199,7 @@ const EditorToolbar = ({
         </span>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default EditorToolbar
+export default EditorToolbar;

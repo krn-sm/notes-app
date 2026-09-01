@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState,
-} from "react"
+import { useEffect, useState } from "react"
 
 import NoteCard from "../molecules/NoteCard"
 import ConfirmationModal from "../organisms/ConfirmationModal"
@@ -121,24 +118,28 @@ const NoteList = ({
   const [isDeleting, setIsDeleting] =
     useState(false)
 
-  const [isRestoring, setIsRestoring] =
-    useState(false)
+  const [
+    isRestoring,
+    setIsRestoring,
+  ] = useState(false)
 
   const [
-  debouncedSearchQuery,
-  setDebouncedSearchQuery,
-] = useState(searchQuery)
+    debouncedSearchQuery,
+    setDebouncedSearchQuery,
+  ] = useState(searchQuery)
 
-useEffect(() => {
-  const timeout = setTimeout(() => {
-    setDebouncedSearchQuery(searchQuery)
-  }, 400)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(
+        searchQuery,
+      )
+    }, 400)
 
-  return () => {
-    clearTimeout(timeout)
-  }
-}, [searchQuery])
-  
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [searchQuery])
+
   useEffect(() => {
     const loadNotes = async () => {
       try {
@@ -150,7 +151,9 @@ useEffect(() => {
             favorite,
             deleted,
             tag_id,
-            q: debouncedSearchQuery || undefined,
+            q:
+              debouncedSearchQuery ||
+              undefined,
           })
 
         setNotes(response.items)
@@ -175,6 +178,25 @@ useEffect(() => {
     debouncedSearchQuery,
   ])
 
+  const sortedNotes = [
+    ...notes,
+  ].sort((a, b) => {
+    if (a.id === selectedNoteId) {
+      return -1
+    }
+
+    if (b.id === selectedNoteId) {
+      return 1
+    }
+
+    return 0
+  })
+
+  const displayedNotes =
+  variant === "sidebar"
+    ? sortedNotes.slice(0, 4)
+    : sortedNotes
+  
   const noteMatchesFilters = (
     note: Note,
   ) => {
@@ -205,41 +227,45 @@ useEffect(() => {
     return true
   }
 
-  const handleFavoriteToggle = async (
-    note: Note,
-  ) => {
-    try {
-      const updatedNote =
-        await updateNote(note.id, {
-          is_favorite:
-            !note.is_favorite,
-        })
-
-      setNotes((currentNotes) => {
-        if (
-          !noteMatchesFilters(
-            updatedNote,
+  const handleFavoriteToggle =
+    async (note: Note) => {
+      try {
+        const updatedNote =
+          await updateNote(
+            note.id,
+            {
+              is_favorite:
+                !note.is_favorite,
+            },
           )
-        ) {
-          return currentNotes.filter(
-            (currentNote) =>
-              currentNote.id !==
-              updatedNote.id,
-          )
-        }
 
-        return currentNotes.map(
-          (currentNote) =>
-            currentNote.id ===
-            updatedNote.id
-              ? updatedNote
-              : currentNote,
+        setNotes(
+          (currentNotes) => {
+            if (
+              !noteMatchesFilters(
+                updatedNote,
+              )
+            ) {
+              return currentNotes.filter(
+                (currentNote) =>
+                  currentNote.id !==
+                  updatedNote.id,
+              )
+            }
+
+            return currentNotes.map(
+              (currentNote) =>
+                currentNote.id ===
+                updatedNote.id
+                  ? updatedNote
+                  : currentNote,
+            )
+          },
         )
-      })
-    } catch (error) {
-      console.error(error)
+      } catch (error) {
+        console.error(error)
+      }
     }
-  }
 
   const handleDeleteClick = (
     noteId: number,
@@ -283,7 +309,9 @@ useEffect(() => {
         setIsDeleting(true)
         setError("")
 
-        if (noteToDelete.is_deleted) {
+        if (
+          noteToDelete.is_deleted
+        ) {
           await permanentlyDeleteNote(
             noteToDelete.id,
           )
@@ -293,12 +321,13 @@ useEffect(() => {
           )
         }
 
-        setNotes((currentNotes) =>
-          currentNotes.filter(
-            (note) =>
-              note.id !==
-              noteToDelete.id,
-          ),
+        setNotes(
+          (currentNotes) =>
+            currentNotes.filter(
+              (note) =>
+                note.id !==
+                noteToDelete.id,
+            ),
         )
 
         setNoteToDelete(null)
@@ -329,12 +358,13 @@ useEffect(() => {
           noteToRestore.id,
         )
 
-        setNotes((currentNotes) =>
-          currentNotes.filter(
-            (note) =>
-              note.id !==
-              noteToRestore.id,
-          ),
+        setNotes(
+          (currentNotes) =>
+            currentNotes.filter(
+              (note) =>
+                note.id !==
+                noteToRestore.id,
+            ),
         )
 
         setNoteToRestore(null)
@@ -412,6 +442,7 @@ useEffect(() => {
           className={`
             transition-all
             duration-300
+
             ${
               variant === "grid"
                 ? `
@@ -423,59 +454,71 @@ useEffect(() => {
                 `
                 : `
                   flex
+                  h-full
+                  min-h-0
                   flex-col
                   gap-3
                   overflow-y-auto
+                  pr-1
                 `
             }
           `}
         >
-          {notes.map((note) => (
-            <NoteCard
-              key={note.id}
-              id={note.id}
-              title={note.title}
-              preview={note.content}
-              date={formatDate(
-                note.updated_at,
-              )}
-              tags={note.tags}
-              isFavorite={
-                note.is_favorite
-              }
-              isDeleted={
-                note.is_deleted
-              }
-              isSelected={
-                note.id ===
-                selectedNoteId
-              }
-              onClick={() =>
-                onNoteClick(note)
-              }
-              onFavoriteToggle={(
-                id,
-              ) => {
-                const selectedNote =
-                  notes.find(
-                    (note) =>
-                      note.id === id,
-                  )
-
-                if (selectedNote) {
-                  handleFavoriteToggle(
-                    selectedNote,
-                  )
+          {displayedNotes.map((note) => (
+              <NoteCard
+                key={note.id}
+                id={note.id}
+                title={note.title}
+                preview={note.content}
+                date={formatDate(
+                  note.updated_at,
+                )}
+                tags={note.tags}
+                isFavorite={
+                  note.is_favorite
                 }
-              }}
-              onDelete={
-                handleDeleteClick
-              }
-              onRestore={
-                handleRestoreClick
-              }
-            />
-          ))}
+                isDeleted={
+                  note.is_deleted
+                }
+                isSelected={
+                  note.id ===
+                  selectedNoteId
+                }
+
+                variant={variant}
+
+                onClick={() =>
+                  onNoteClick(note)
+                }
+
+                onFavoriteToggle={(
+                  id,
+                ) => {
+                  const selectedNote =
+                    notes.find(
+                      (note) =>
+                        note.id === id,
+                    )
+
+                  if (
+                    selectedNote
+                  ) {
+                    handleFavoriteToggle(
+                      selectedNote,
+                    )
+                  }
+                }}
+
+                onDelete={
+                  handleDeleteClick
+                }
+
+                onRestore={
+                  handleRestoreClick
+                }
+              />
+            ),
+          )}
         </section>
       )}
 

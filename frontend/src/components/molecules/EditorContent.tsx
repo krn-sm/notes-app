@@ -1,88 +1,62 @@
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react"
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 export type EditorFormatState = {
-  bold: boolean
-  italic: boolean
-  underline: boolean
-  bulletList: boolean
-  orderedList: boolean
-}
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+};
 
 export type EditorContentHandle = {
-  format: (command: string) => void
-  insertChecklist: () => void
-  getFormatState: () => EditorFormatState
-  focus: () => void
-}
+  format: (command: string) => void;
+  insertChecklist: () => void;
+  getFormatState: () => EditorFormatState;
+  focus: () => void;
+};
 
 type EditorContentProps = {
-  value: string
-  onChange: (value: string) => void
-  onFormatChange?: (
-    state: EditorFormatState,
-  ) => void
-  textSizeClassName?: string
-}
+  value: string;
+  onChange: (value: string) => void;
+  onFormatChange?: (state: EditorFormatState) => void;
+  textSizeClassName?: string;
+};
 
-const EditorContent = forwardRef<
-  EditorContentHandle,
-  EditorContentProps
->(
-  (
-    {
-      value,
-      onChange,
-      onFormatChange,
-      textSizeClassName = "text-lg",
-    },
-    ref,
-  ) => {
-    const editorRef = useRef<HTMLDivElement>(null)
+const EditorContent = forwardRef<EditorContentHandle, EditorContentProps>(
+  ({ value, onChange, onFormatChange, textSizeClassName = "text-lg" }, ref) => {
+    const editorRef = useRef<HTMLDivElement>(null);
 
     const updateFormatState = () => {
       const state: EditorFormatState = {
         bold: document.queryCommandState("bold"),
-        italic: document.queryCommandState("italic"),
-        underline:
-          document.queryCommandState("underline"),
-        bulletList:
-          document.queryCommandState(
-            "insertUnorderedList",
-          ),
-        orderedList:
-          document.queryCommandState(
-            "insertOrderedList",
-          ),
-      }
 
-      onFormatChange?.(state)
-    }
+        italic: document.queryCommandState("italic"),
+
+        underline: document.queryCommandState("underline"),
+
+        bulletList: document.queryCommandState("insertUnorderedList"),
+
+        orderedList: document.queryCommandState("insertOrderedList"),
+      };
+
+      onFormatChange?.(state);
+    };
 
     useImperativeHandle(ref, () => ({
       format: (command: string) => {
-        editorRef.current?.focus()
+        editorRef.current?.focus();
 
-        document.execCommand(
-          command,
-          false,
-        )
+        document.execCommand(command, false);
 
         if (editorRef.current) {
-          onChange(
-            editorRef.current.innerHTML,
-          )
+          onChange(editorRef.current.innerHTML);
         }
 
-        updateFormatState()
+        updateFormatState();
       },
 
       insertChecklist: () => {
-        editorRef.current?.focus()
+        editorRef.current?.focus();
 
         document.execCommand(
           "insertHTML",
@@ -96,75 +70,61 @@ const EditorContent = forwardRef<
               <span>Checklist item</span>
             </div>
           `,
-        )
+        );
 
         if (editorRef.current) {
-          onChange(
-            editorRef.current.innerHTML,
-          )
+          onChange(editorRef.current.innerHTML);
         }
       },
 
       getFormatState: () => ({
         bold: document.queryCommandState("bold"),
-        italic:
-          document.queryCommandState("italic"),
-        underline:
-          document.queryCommandState("underline"),
-        bulletList:
-          document.queryCommandState(
-            "insertUnorderedList",
-          ),
-        orderedList:
-          document.queryCommandState(
-            "insertOrderedList",
-          ),
+
+        italic: document.queryCommandState("italic"),
+
+        underline: document.queryCommandState("underline"),
+
+        bulletList: document.queryCommandState("insertUnorderedList"),
+
+        orderedList: document.queryCommandState("insertOrderedList"),
       }),
 
       focus: () => {
-        editorRef.current?.focus()
+        editorRef.current?.focus();
       },
-    }))
+    }));
 
     useEffect(() => {
-      if (
-        editorRef.current &&
-        editorRef.current.innerHTML !== value
-      ) {
-        editorRef.current.innerHTML = value
+      if (editorRef.current && editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value;
       }
-    }, [value])
+    }, [value]);
 
     const handleInput = () => {
       if (!editorRef.current) {
-        return
+        return;
       }
 
-      onChange(editorRef.current.innerHTML)
+      onChange(editorRef.current.innerHTML);
 
-      updateFormatState()
-    }
+      updateFormatState();
+    };
 
     const handleSelectionChange = () => {
       if (!editorRef.current) {
-        return
+        return;
       }
 
-      const selection =
-        window.getSelection()
+      const selection = window.getSelection();
 
       if (!selection?.anchorNode) {
-        return
+        return;
       }
 
-      if (
-        editorRef.current.contains(
-          selection.anchorNode,
-        )
-      ) {
-        updateFormatState()
+      if (editorRef.current.contains(selection.anchorNode)) {
+        updateFormatState();
       }
-    }
+    };
 
     return (
       <div
@@ -177,34 +137,37 @@ const EditorContent = forwardRef<
         onClick={handleSelectionChange}
         data-placeholder="Start writing..."
         className={`
-          min-h-[400px]
-          w-full
-          whitespace-pre-wrap
-          font-body
-          ${textSizeClassName}
-          leading-[2]
-          text-ink
-          outline-none
+    h-full
+    min-h-0
+    w-full
+    overflow-y-auto
+    whitespace-pre-wrap
+    pr-4
+    font-body
+    ${textSizeClassName}
+    leading-[2]
+    text-ink
+    outline-none
 
-          empty:before
-          empty:before:content-[attr(data-placeholder)]
-          empty:before:text-ink-muted
+    empty:before
+    empty:before:content-[attr(data-placeholder)]
+    empty:before:text-ink-muted
 
-          [&_ul]:my-4
-          [&_ul]:list-disc
-          [&_ul]:pl-6
+    [&_ul]:my-4
+    [&_ul]:list-disc
+    [&_ul]:pl-6
 
-          [&_ol]:my-4
-          [&_ol]:list-decimal
-          [&_ol]:pl-6
+    [&_ol]:my-4
+    [&_ol]:list-decimal
+    [&_ol]:pl-6
 
-          [&_input[type=checkbox]]:cursor-pointer
-        `}
+    [&_input[type=checkbox]]:cursor-pointer
+  `}
       />
-    )
+    );
   },
-)
+);
 
-EditorContent.displayName = "EditorContent"
+EditorContent.displayName = "EditorContent";
 
-export default EditorContent
+export default EditorContent;

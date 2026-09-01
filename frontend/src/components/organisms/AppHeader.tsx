@@ -55,13 +55,12 @@ const AppHeader = ({
         <h1
           className="
             font-display
-            text-[20px]
+            text-[30px]
             font-medium
             text-ink
           "
         >
           Hello, {user?.name ?? "there"}
-          <span className="ml-2 text-gold">☀</span>
         </h1>
 
         <p

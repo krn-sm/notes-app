@@ -29,6 +29,7 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
           text-ink
           outline-none
           placeholder:text-ink-muted
+          py-4
         "
       />
     )

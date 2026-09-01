@@ -5,15 +5,19 @@ type EditorFooterProps = {
 const EditorFooter = ({
   content,
 }: EditorFooterProps) => {
-  const getPlainText = (html: string) => {
-    const element = document.createElement("div")
+  const getPlainText = (
+    html: string,
+  ) => {
+    const element =
+      document.createElement("div")
 
     element.innerHTML = html
 
     return element.textContent ?? ""
   }
 
-  const plainText = getPlainText(content)
+  const plainText =
+    getPlainText(content)
 
   const wordCount = plainText
     .trim()
@@ -24,6 +28,7 @@ const EditorFooter = ({
     <div
       className="
         flex
+        shrink-0
         items-center
         justify-end
         border-t
@@ -38,7 +43,10 @@ const EditorFooter = ({
           text-ink-muted
         "
       >
-        {wordCount} {wordCount === 1 ? "word" : "words"}
+        {wordCount}{" "}
+        {wordCount === 1
+          ? "word"
+          : "words"}
       </p>
     </div>
   )

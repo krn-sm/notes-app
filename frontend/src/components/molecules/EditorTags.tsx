@@ -45,14 +45,14 @@ const EditorTags = ({
         gap-2
         border-t
         border-line
-        pt-4
+        pt-1
       "
     >
       {tags.map((tag) => (
         <Badge
           key={tag.id}
           className="
-            gap-1
+            gap-2
             pr-2
           "
         >
@@ -62,7 +62,7 @@ const EditorTags = ({
               w-1.5
               shrink-0
               rounded-full
-              bg-[#73c7a5]
+              bg-gold
             "
           />
 
@@ -77,6 +77,7 @@ const EditorTags = ({
               text-ink-muted
               transition
               hover:text-ink
+              border
             "
             aria-label={`Remove ${tag.name}`}
           >

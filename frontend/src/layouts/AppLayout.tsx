@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Outlet } from "react-router-dom"
 
 import Toast from "../components/molecules/Toast"
-import ProfileDrawer from "../components/organisms/ProfileDrawer/ProfileDrawer"
+import ProfileDrawer from "../components/organisms/ProfileDrawer"
 import SideBar from "../components/organisms/SideBar"
 
 import {
