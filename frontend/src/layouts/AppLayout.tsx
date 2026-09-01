@@ -1,69 +1,117 @@
-import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useEffect, useState } from "react"
+import { Outlet } from "react-router-dom"
 
-import Toast from "../components/molecules/Toast";
-import AppHeader from "../components/organisms/AppHeader";
-import ProfileDrawer from "../components/organisms/ProfileDrawer/ProfileDrawer";
-import SideBar from "../components/organisms/SideBar";
+import Toast from "../components/molecules/Toast"
+import ProfileDrawer from "../components/organisms/ProfileDrawer/ProfileDrawer"
+import SideBar from "../components/organisms/SideBar"
 
-import { getCurrentUser, type User } from "../services/authService";
+import {
+  getCurrentUser,
+  type User,
+} from "../services/authService"
 
 const AppLayout = () => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [toastMessage, setToastMessage] = useState("");
+  const [isProfileOpen, setIsProfileOpen] =
+    useState(false)
+
+  const [user, setUser] =
+    useState<User | null>(null)
+
+  const [toastMessage, setToastMessage] =
+    useState("")
 
   const showToast = (message: string) => {
-    setToastMessage(message);
+    setToastMessage(message)
 
     setTimeout(() => {
-      setToastMessage("");
-    }, 3000);
-  };
+      setToastMessage("")
+    }, 3000)
+  }
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const currentUser = await getCurrentUser();
+        const currentUser =
+          await getCurrentUser()
 
-        setUser(currentUser);
+        setUser(currentUser)
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
-    };
+    }
 
-    loadUser();
-  }, []);
+    loadUser()
+  }, [])
 
   return (
-    <div className="flex min-h-screen bg-paper">
-      <SideBar />
+    <div
+      className="
+        flex
+        h-screen
+        overflow-hidden
+        bg-paper
+      "
+    >
+      {/* Sidebar */}
+      <div
+        className="
+          relative
+          z-30
+          shrink-0
+          overflow-visible
+        "
+      >
+        <SideBar />
+      </div>
 
-      <main className="flex min-w-0 flex-1 flex-col">
-        <AppHeader user={user} onProfileClick={() => setIsProfileOpen(true)} />
-
-        <div className="flex-1">
-          <Outlet />
+      {/* Main area */}
+      <main
+        className="
+          relative
+          z-10
+          min-w-0
+          flex-1
+          overflow-hidden
+        "
+      >
+        <div
+          className="
+            h-full
+            overflow-hidden
+          "
+        >
+          <Outlet
+            context={{
+              user,
+              onProfileClick: () =>
+                setIsProfileOpen(true),
+            }}
+          />
         </div>
       </main>
 
       {user && (
         <ProfileDrawer
           isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
+          onClose={() =>
+            setIsProfileOpen(false)
+          }
           name={user.name}
           email={user.email}
           onUserUpdate={setUser}
           showToast={showToast}
         />
       )}
+
       <Toast
         message={toastMessage}
         isVisible={Boolean(toastMessage)}
-        onClose={() => setToastMessage("")}
+        onClose={() =>
+          setToastMessage("")
+        }
       />
     </div>
-  );
-};
+  )
+}
 
-export default AppLayout;
+export default AppLayout

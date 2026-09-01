@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Boolean,
     DateTime,
     String,
     Text,
@@ -9,7 +8,11 @@ from sqlalchemy import (
     Column,
     ForeignKey,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.database import Base
 
@@ -19,12 +22,18 @@ note_tags = Table(
     Base.metadata,
     Column(
         "note_id",
-        ForeignKey("notes.id", ondelete="CASCADE"),
+        ForeignKey(
+            "notes.id",
+            ondelete="CASCADE",
+        ),
         primary_key=True,
     ),
     Column(
         "tag_id",
-        ForeignKey("tags.id", ondelete="CASCADE"),
+        ForeignKey(
+            "tags.id",
+            ondelete="CASCADE",
+        ),
         primary_key=True,
     ),
 )
@@ -33,7 +42,10 @@ note_tags = Table(
 class Note(Base):
     __tablename__ = "notes"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True,
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
@@ -52,8 +64,8 @@ class Note(Base):
     )
 
     is_favorite: Mapped[bool] = mapped_column(
-    default=False,
-    nullable=False,
+        default=False,
+        nullable=False,
     )
 
     is_deleted: Mapped[bool] = mapped_column(
@@ -62,15 +74,14 @@ class Note(Base):
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
@@ -83,7 +94,10 @@ class Note(Base):
 class Tag(Base):
     __tablename__ = "tags"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True,
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),

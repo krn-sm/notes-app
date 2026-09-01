@@ -22,21 +22,25 @@ const router = createBrowserRouter([
         children: [
           {
             path: "/home",
-            element: <HomePage />,
+            children: [
+              {
+                index: true,
+                element: <HomePage />,
+              },
+              {
+                path: "favorites",
+                element: <HomePage />,
+              },
+              {
+                path: "trash",
+                element: <HomePage />,
+              },
+              {
+                path: "category/:tagId",
+                element: <HomePage />,
+              },
+            ],
           },
-
-          // {
-          //   path: "/favorites",
-          //   element: <FavoritesPage />,
-          // },
-          // {
-          //   path: "/trash",
-          //   element: <TrashPage />,
-          // },
-          // {
-          //   path: "/category/:categoryName",
-          //   element: <CategoryPage />,
-          // },
         ],
       },
     ],

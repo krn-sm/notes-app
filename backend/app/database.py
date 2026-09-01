@@ -1,21 +1,26 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     database_url: str
     secret_key: str
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
+
 
 settings = Settings()
+
 
 engine = create_engine(
     settings.database_url,
     echo=True,
 )
+
 
 SessionLocal = sessionmaker(
     bind=engine,

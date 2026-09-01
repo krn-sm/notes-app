@@ -1,43 +1,70 @@
+import {
+  RotateCcw,
+  Star,
+  Trash2,
+} from "lucide-react"
+
+import Button from "../atoms/Button"
+import Badge from "../atoms/Badge"
+
+type Tag = {
+  id: number
+  name: string
+}
+
 type NoteCardProps = {
+  id: number
   title: string
   preview: string
   date: string
+  tags?: Tag[]
+  isFavorite?: boolean
+  isDeleted?: boolean
+  isSelected?: boolean
+  variant?: "grid" | "sidebar"
+  onClick: (id: number) => void
+  onFavoriteToggle: (id: number) => void
+  onDelete: (id: number) => void
+  onRestore?: (id: number) => void
 }
 
 const NoteCard = ({
+  id,
   title,
   preview,
   date,
+  tags = [],
+  isFavorite,
+  isDeleted = false,
+  onClick,
+  onFavoriteToggle,
+  onDelete,
+  onRestore,
 }: NoteCardProps) => {
   return (
     <article
+      onClick={() => onClick(id)}
       className="
-        rounded-lg
+        flex
+        min-h-[280px]
+        cursor-pointer
+        flex-col
+        rounded-xl
         border
         border-line
         bg-paper
-        p-5
+        p-6
         shadow-sm
         transition
         hover:-translate-y-1
         hover:shadow-md
       "
     >
-      <p
-        className="
-          font-body
-          text-xs
-          text-ink-muted
-        "
-      >
-        {date}
-      </p>
-
       <h2
         className="
-          mt-2
+          line-clamp-2
           font-display
-          text-2xl
+          text-xl
           font-semibold
           text-ink
         "
@@ -47,7 +74,8 @@ const NoteCard = ({
 
       <p
         className="
-          mt-2
+          mt-3
+          line-clamp-3
           font-body
           text-sm
           leading-relaxed
@@ -56,6 +84,123 @@ const NoteCard = ({
       >
         {preview}
       </p>
+
+      {tags.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Badge key={tag.id}>
+              {tag.name}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      <div
+        className="
+          mt-auto
+          flex
+          items-center
+          justify-between
+          pt-6
+        "
+      >
+        <p
+          className="
+            font-body
+            text-sm
+            text-ink-muted
+          "
+        >
+          {date}
+        </p>
+
+        <div className="flex items-center gap-3">
+          {isDeleted ? (
+            <>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+
+                  onRestore?.(id)
+                }}
+                className="
+                  p-1
+                  hover:text-accent
+                "
+                aria-label="Restore note"
+              >
+                <RotateCcw size={20} />
+              </Button>
+
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+
+                  onDelete(id)
+                }}
+                className="
+                  p-1
+                  hover:text-red-500
+                "
+                aria-label="Delete permanently"
+              >
+                <Trash2 size={20} />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+
+                  onFavoriteToggle(id)
+                }}
+                className="
+                  p-1
+                  hover:text-accent
+                "
+                aria-label={
+                  isFavorite
+                    ? "Remove from favorites"
+                    : "Add to favorites"
+                }
+              >
+                <Star
+                  size={21}
+                  className={
+                    isFavorite
+                      ? "fill-current text-accent"
+                      : ""
+                  }
+                />
+              </Button>
+
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+
+                  onDelete(id)
+                }}
+                className="
+                  p-1
+                  hover:text-red-500
+                "
+                aria-label="Move to trash"
+              >
+                <Trash2 size={20} />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
     </article>
   )
 }

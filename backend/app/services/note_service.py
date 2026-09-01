@@ -100,11 +100,15 @@ def update_note(
     if note is None or note.is_deleted:
         return None
 
+    content_updated = False
+
     if note_data.title is not None:
         note.title = note_data.title
+        content_updated = True
 
     if note_data.content is not None:
         note.content = note_data.content
+        content_updated = True
 
     if note_data.tag_ids is not None:
 
@@ -127,8 +131,13 @@ def update_note(
         else:
             note.tags = []
 
+        content_updated = True
+
     if note_data.is_favorite is not None:
         note.is_favorite = note_data.is_favorite
+
+    if content_updated:
+        note.updated_at = datetime.now(timezone.utc)
 
     return note_repository.update_note(
         db,

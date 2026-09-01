@@ -5,51 +5,63 @@ import {
   Plus,
   Star,
   Trash2,
-} from "lucide-react"
-import { useState } from "react"
+} from "lucide-react";
 
-import Button from "../atoms/Button"
-import Brand from "../molecules/Brand"
-import CategoryNavItem from "../molecules/CategoryNavItem"
-import NavItem from "../molecules/NavItem"
+import { useEffect, useState } from "react";
 
-const categories = [
-  {
-    name: "Personal",
-    count: 8,
-    path: "/home/category/personal",
-  },
-  {
-    name: "Work",
-    count: 6,
-    path: "/home/category/work",
-  },
-  {
-    name: "Ideas",
-    count: 4,
-    path: "/home/category/ideas",
-  },
-  {
-    name: "Study",
-    count: 5,
-    path: "/home/category/study",
-  },
-  {
-    name: "Projects",
-    count: 3,
-    path: "/home/category/projects",
-  },
-]
+import Button from "../atoms/Button";
+import Brand from "../molecules/Brand";
+import CategoryNavItem from "../molecules/CategoryNavItem";
+import NavItem from "../molecules/NavItem";
+
+import { getTags, type TagWithCount } from "../../services/tagService";
+
+const INITIAL_TAG_COUNT = 5;
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false);
 
+  const [tags, setTags] = useState<TagWithCount[]>([]);
+
+  const [isLoadingTags, setIsLoadingTags] = useState(true);
+
+  const [tagPage, setTagPage] = useState(0);
+
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        setIsLoadingTags(true);
+
+        const response = await getTags();
+
+        const sortedTags = [...response].sort(
+          (a, b) => b.note_count - a.note_count,
+        );
+
+        setTags(sortedTags);
+      } catch (error) {
+        console.error("Failed to load tags:", error);
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    loadTags();
+  }, []);
+
+  const startIndex = tagPage * INITIAL_TAG_COUNT;
+
+  const visibleTags = tags.slice(startIndex, startIndex + INITIAL_TAG_COUNT);
+
+  const hasMoreTags = startIndex + INITIAL_TAG_COUNT < tags.length;
+  
   return (
     <aside
       className={`
         relative
+        z-30
         flex
-        min-h-screen
+        h-screen
         shrink-0
         flex-col
         overflow-visible
@@ -65,6 +77,7 @@ const Sidebar = () => {
       `}
     >
       {/* Collapse Button */}
+
       <Button
         variant="secondary"
         onClick={() => setCollapsed((prev) => !prev)}
@@ -72,8 +85,8 @@ const Sidebar = () => {
         className="
           absolute
           top-1/2
-          -right-4
-          z-20
+          -right-[18px]
+          z-50
           h-9
           w-9
           -translate-y-1/2
@@ -93,12 +106,15 @@ const Sidebar = () => {
       </Button>
 
       {/* Brand */}
+
       <Brand collapsed={collapsed} />
 
       {/* New Note */}
+
       <div
         className={`
           mt-10
+          shrink-0
           ${collapsed ? "" : "px-1"}
         `}
       >
@@ -120,7 +136,14 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="mt-6 space-y-1">
+
+      <nav
+        className="
+          mt-6
+          shrink-0
+          space-y-1
+        "
+      >
         <NavItem
           to="/home"
           end
@@ -148,7 +171,15 @@ const Sidebar = () => {
       </nav>
 
       {/* Categories */}
-      <section className="mt-10">
+
+      <section
+        className="
+          mt-10
+          min-h-0
+          flex-1
+          overflow-hidden
+        "
+      >
         {!collapsed && (
           <p
             className="
@@ -171,19 +202,76 @@ const Sidebar = () => {
             ${collapsed ? "mt-2" : "mt-5"}
           `}
         >
-          {categories.map((category) => (
-            <CategoryNavItem
-              key={category.name}
-              name={category.name}
-              count={category.count}
-              path={category.path}
-              collapsed={collapsed}
-            />
-          ))}
+          {isLoadingTags && !collapsed && (
+            <p
+              className="
+                  px-3
+                  text-sm
+                  text-gold-light/60
+                "
+            >
+              Loading...
+            </p>
+          )}
+
+          {!isLoadingTags &&
+            visibleTags.map((tag) => (
+              <CategoryNavItem
+                key={tag.id}
+                name={tag.name}
+                count={tag.note_count}
+                path={`/home/category/${tag.id}`}
+                collapsed={collapsed}
+              />
+            ))}
+
+          {!isLoadingTags && tags.length === 0 && !collapsed && (
+            <p
+              className="
+                  px-3
+                  text-sm
+                  text-gold-light/60
+                "
+            >
+              No categories yet.
+            </p>
+          )}
         </div>
+
+{/* View More */}
+
+{!collapsed &&
+  tags.length >
+    INITIAL_TAG_COUNT && (
+    <div className="mt-4 px-1">
+      <Button
+        variant="ghost"
+        onClick={() => {
+          if (hasMoreTags) {
+            setTagPage(
+              (current) => current + 1,
+            )
+          } else {
+            setTagPage(0)
+          }
+        }}
+        className="
+          h-9
+          w-full
+          text-sm
+          text-gold-light
+          hover:!bg-leather-light
+        "
+      >
+        {hasMoreTags
+          ? "View more"
+          : "Back to top"}
+      </Button>
+    </div>
+  )}
       </section>
     </aside>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
