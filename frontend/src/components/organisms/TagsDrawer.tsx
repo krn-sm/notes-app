@@ -6,7 +6,6 @@ import Button from "../atoms/Button";
 import Drawer from "../molecules/Drawer";
 
 import { useToast } from "../../contexts/ToastContext";
-import getErrorMessage from "../../utils/getErrorMessage";
 
 import {
   deleteTag,
@@ -70,7 +69,10 @@ const TagsDrawer = ({
 
       handleCancelEditing();
     } catch (error) {
-      showToast(getErrorMessage(error), "error");
+      showToast(
+        error instanceof Error ? error.message : "Failed to update tag",
+        "error",
+      );
     }
   };
 
@@ -82,7 +84,10 @@ const TagsDrawer = ({
         currentTags.filter((tag) => tag.id !== tagId),
       );
     } catch (error) {
-      showToast(getErrorMessage(error), "error");
+      showToast(
+        error instanceof Error ? error.message : "Failed to delete tag",
+        "error",
+      );
     }
   };
 
@@ -338,21 +343,23 @@ const TagsDrawer = ({
                         </>
                       ) : (
                         <>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleStartEditing(tag)}
-                            className="
-                              h-8
-                              w-8
-                              !p-0
-                              opacity-0
-                              transition-opacity
-                              group-hover:opacity-100
-                            "
-                            aria-label={`Rename ${tag.name}`}
-                          >
-                            <Pencil size={16} />
-                          </Button>
+                          {tag.note_count > 0 && (
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleStartEditing(tag)}
+                              className="
+                                h-8
+                                w-8
+                                !p-0
+                                opacity-0
+                                transition-opacity
+                                group-hover:opacity-100
+                              "
+                              aria-label={`Rename ${tag.name}`}
+                            >
+                              <Pencil size={16} />
+                            </Button>
+                          )}
 
                           {tag.note_count === 0 && (
                             <Button

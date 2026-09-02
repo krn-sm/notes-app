@@ -11,8 +11,7 @@ import ProfileDrawerHeader from "../molecules/ProfileDrawerHeader";
 import ProfileForm from "../molecules/ProfileForm";
 import ProfileInfo from "../molecules/ProfileInfo";
 
-import { useToast } from "../../contexts/ToastContext"
-import getErrorMessage from "../../utils/getErrorMessage"
+import { useToast } from "../../contexts/ToastContext";
 
 type ProfileDrawerProps = {
   isOpen: boolean;
@@ -95,7 +94,7 @@ const ProfileDrawer = ({
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError("Something went wrong");
+        showToast("Something went wrong", "error");
       }
 
       setIsSaveModalOpen(false);
@@ -116,7 +115,12 @@ const ProfileDrawer = ({
         replace: true,
       });
     } catch (error) {
-    showToast(getErrorMessage(error), "error"); 
+      showToast(
+      error instanceof Error
+        ? error.message
+        : "Failed to logout",
+      "error",
+    );
     }
   };
 

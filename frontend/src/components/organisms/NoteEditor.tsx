@@ -27,8 +27,6 @@ import {
 import { useTags } from "../../contexts/TagContext";
 import { useToast } from "../../contexts/ToastContext";
 
-import getErrorMessage from "../../utils/getErrorMessage";
-
 type Tag = {
   id: number;
   name: string;
@@ -153,7 +151,10 @@ const NoteEditor = ({
 
       setIsEditing(true);
     } catch (error) {
-      showToast(getErrorMessage(error), "error");
+      showToast(
+        error instanceof Error ? error.message : "Failed to create tag",
+        "error",
+      );
     }
   };
 
@@ -217,6 +218,10 @@ const NoteEditor = ({
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save note:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to save note",
+        "error",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -249,6 +254,7 @@ const NoteEditor = ({
       }, 2000);
     } catch (error) {
       console.error("Failed to copy note:", error);
+      showToast("Failed to copy note", "error");
     }
   };
 
@@ -271,8 +277,14 @@ const NoteEditor = ({
       onNoteDeleted?.(note.id);
 
       onClose();
+
+      showToast("Note moved to trash", "success");
     } catch (error) {
       console.error("Failed to delete note:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to delete note",
+        "error",
+      );
     } finally {
       setIsDeleting(false);
     }

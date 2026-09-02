@@ -4,6 +4,9 @@ import NoteCard from "../molecules/NoteCard";
 import Pagination from "../molecules/Pagination";
 import ConfirmationModal from "../organisms/ConfirmationModal";
 
+import { useToast } from "../../contexts/ToastContext";
+import { useTags } from "../../contexts/TagContext";
+
 import {
   deleteNote,
   getNotes,
@@ -89,6 +92,10 @@ const NoteList = ({
 
   onNoteCountChange,
 }: NoteListProps) => {
+  const { showToast } = useToast();
+
+  const { refreshTags } = useTags();
+
   const { favorite, deleted, tag_id } = filters;
 
   const [notes, setNotes] = useState<Note[]>([]);
@@ -234,6 +241,10 @@ const NoteList = ({
       });
     } catch (error) {
       console.error(error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to update note",
+        "error",
+      );
     }
   };
 
@@ -261,14 +272,15 @@ const NoteList = ({
     try {
       setIsDeleting(true);
 
-      setError("");
+      const isPermanent = noteToDelete.is_deleted;
 
-      if (noteToDelete.is_deleted) {
+      if (isPermanent) {
         await permanentlyDeleteNote(noteToDelete.id);
       } else {
         await deleteNote(noteToDelete.id);
       }
 
+      await refreshTags();
       /*
        * Reload current page
        * after deletion.
@@ -276,19 +288,12 @@ const NoteList = ({
 
       const response = await getNotes({
         favorite,
-
         deleted,
-
         tag_id,
-
         q: debouncedSearchQuery || undefined,
-
         page: currentPage,
-
         limit: NOTES_PER_PAGE,
       });
-
-      // go back
 
       if (response.items.length === 0 && currentPage > 1) {
         setCurrentPage((page) => page - 1);
@@ -301,11 +306,17 @@ const NoteList = ({
       }
 
       setNoteToDelete(null);
+      showToast(
+        isPermanent ? "Note permanently deleted" : "Note moved to trash",
+        "success",
+      );
+      
     } catch (error) {
       console.error(error);
 
-      setError(
+      showToast(
         error instanceof Error ? error.message : "Failed to delete note",
+        "error",
       );
     } finally {
       setIsDeleting(false);
@@ -320,21 +331,14 @@ const NoteList = ({
     try {
       setIsRestoring(true);
 
-      setError("");
-
       await restoreNote(noteToRestore.id);
-
+      await refreshTags();
       const response = await getNotes({
         favorite,
-
         deleted,
-
         tag_id,
-
         q: debouncedSearchQuery || undefined,
-
         page: currentPage,
-
         limit: NOTES_PER_PAGE,
       });
 
@@ -349,11 +353,15 @@ const NoteList = ({
       }
 
       setNoteToRestore(null);
+
+      showToast("Note restored successfully", "success");
+
     } catch (error) {
       console.error(error);
 
-      setError(
+      showToast(
         error instanceof Error ? error.message : "Failed to restore note",
+        "error",
       );
     } finally {
       setIsRestoring(false);
