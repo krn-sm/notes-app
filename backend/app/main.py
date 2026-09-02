@@ -21,23 +21,3 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(notes_router)
 app.include_router(tags_router)
-
-# from sqlalchemy import text
-# @app.get("/")
-# def root():
-#     return {"message": "Notes API is running"}
-
-
-# @app.get("/health/db")
-# def database_health():
-#     with engine.connect() as connection:
-#         result = connection.execute(
-#             text("SELECT current_database()")
-#         )
-
-#         database_name = result.scalar()
-
-#     return {
-#         "database": database_name,
-#         "status": "connected",
-#     }

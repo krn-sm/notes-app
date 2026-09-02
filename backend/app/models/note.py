@@ -44,7 +44,6 @@ class Note(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        index=True,
     )
 
     user_id: Mapped[int] = mapped_column(
@@ -96,7 +95,6 @@ class Tag(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        index=True,
     )
 
     user_id: Mapped[int] = mapped_column(

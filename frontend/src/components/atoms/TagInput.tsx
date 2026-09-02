@@ -19,7 +19,7 @@ const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
           onChange(event.target.value)
         }
         onKeyDown={onKeyDown}
-        placeholder="Add tag..."
+        placeholder="Create tag..."
         className="
           min-w-0
           flex-1

@@ -1,21 +1,21 @@
-import { X } from "lucide-react"
+import { X } from "lucide-react";
 
-import Badge from "../atoms/Badge"
-import TagInput from "../atoms/TagInput"
+import Badge from "../atoms/Badge";
+import TagInput from "../atoms/TagInput";
 
 type Tag = {
-  id: number
-  name: string
-}
+  id: number;
+  name: string;
+};
 
 type EditorTagsProps = {
-  tags: Tag[]
-  value: string
-  onChange: (value: string) => void
-  onAdd: () => void
-  onRemove: (tagId: number) => void
-  inputRef?: React.Ref<HTMLInputElement>
-}
+  tags: Tag[];
+  value: string;
+  onChange: (value: string) => void;
+  onAdd: () => void;
+  onRemove: (tagId: number) => void;
+  inputRef?: React.Ref<HTMLInputElement>;
+};
 
 const EditorTags = ({
   tags,
@@ -25,17 +25,12 @@ const EditorTags = ({
   onRemove,
   inputRef,
 }: EditorTagsProps) => {
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (
-      event.key === "Enter" &&
-      value.trim()
-    ) {
-      event.preventDefault()
-      onAdd()
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && value.trim()) {
+      event.preventDefault();
+      onAdd();
     }
-  }
+  };
 
   return (
     <div
@@ -43,6 +38,7 @@ const EditorTags = ({
         flex
         items-center
         gap-2
+        overflow-x-auto
         border-t
         border-line
         pt-1
@@ -52,6 +48,7 @@ const EditorTags = ({
         <Badge
           key={tag.id}
           className="
+          shrink-0
             gap-2
             pr-2
           "
@@ -86,14 +83,16 @@ const EditorTags = ({
         </Badge>
       ))}
 
-      <TagInput
-        ref={inputRef}
-        value={value}
-        onChange={onChange}
-        onKeyDown={handleKeyDown}
-      />
+      <div className="min-w-[140px] shrink-0">
+        <TagInput
+          ref={inputRef}
+          value={value}
+          onChange={onChange}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default EditorTags
+export default EditorTags;
