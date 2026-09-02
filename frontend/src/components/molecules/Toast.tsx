@@ -1,18 +1,41 @@
-import { Check, X } from "lucide-react"
+import { AlertTriangle, Check, X, XCircle } from "lucide-react";
 
-import Button from "../atoms/Button"
+import Button from "../atoms/Button";
+
+type ToastVariant = "success" | "error" | "warning";
 
 type ToastProps = {
-  message: string
-  isVisible: boolean
-  onClose: () => void
-}
+  message: string;
+  variant: ToastVariant;
+  isVisible: boolean;
+  onClose: () => void;
+};
 
-const Toast = ({
-  message,
-  isVisible,
-  onClose,
-}: ToastProps) => {
+const Toast = ({ message, variant, isVisible, onClose }: ToastProps) => {
+  const getVariantIcon = () => {
+    if (variant === "error") {
+      return <XCircle size={17} strokeWidth={2} />;
+    }
+
+    if (variant === "warning") {
+      return <AlertTriangle size={17} strokeWidth={2} />;
+    }
+
+    return <Check size={17} strokeWidth={2} />;
+  };
+
+  const getVariantStyles = () => {
+    if (variant === "error") {
+      return "bg-red-100 text-red-600";
+    }
+
+    if (variant === "warning") {
+      return "bg-amber-100 text-amber-600";
+    }
+
+    return "bg-gold/20 text-gold";
+  };
+
   return (
     <div
       className={`
@@ -41,7 +64,7 @@ const Toast = ({
       `}
     >
       <div
-        className="
+        className={`
           flex
           h-8
           w-8
@@ -49,14 +72,10 @@ const Toast = ({
           items-center
           justify-center
           rounded-full
-          bg-gold/20
-          text-gold
-        "
+          ${getVariantStyles()}
+        `}
       >
-        <Check
-          size={17}
-          strokeWidth={2}
-        />
+        {getVariantIcon()}
       </div>
 
       <p
@@ -82,13 +101,10 @@ const Toast = ({
           !p-0
         "
       >
-        <X
-          size={16}
-          strokeWidth={1.8}
-        />
+        <X size={16} strokeWidth={1.8} />
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default Toast
+export default Toast;

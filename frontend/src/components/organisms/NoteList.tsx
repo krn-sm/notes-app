@@ -21,46 +21,32 @@ type NoteFilters = {
 
 type NoteListProps = {
   variant?: "grid" | "sidebar";
+
   selectedNoteId?: number | null;
 
-  onNoteClick: (
-    note: Note,
-  ) => void;
+  onNoteClick: (note: Note) => void;
 
   filters?: NoteFilters;
 
   searchQuery?: string;
+
+  onNoteCountChange?: (count: number) => void;
 };
 
 const NOTES_PER_PAGE = 8;
 
-const formatDate = (
-  dateString: string,
-) => {
-  const date = new Date(
-    dateString,
-  );
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
 
   const now = new Date();
 
-  const difference =
-    now.getTime() -
-    date.getTime();
+  const difference = now.getTime() - date.getTime();
 
-  const minutes = Math.floor(
-    difference /
-      (1000 * 60),
-  );
+  const minutes = Math.floor(difference / (1000 * 60));
 
-  const hours = Math.floor(
-    difference /
-      (1000 * 60 * 60),
-  );
+  const hours = Math.floor(difference / (1000 * 60 * 60));
 
-  const days = Math.floor(
-    difference /
-      (1000 * 60 * 60 * 24),
-  );
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24));
 
   if (minutes < 1) {
     return "Just now";
@@ -71,11 +57,7 @@ const formatDate = (
   }
 
   if (hours < 24) {
-    return `${hours} hour${
-      hours > 1
-        ? "s"
-        : ""
-    } ago`;
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   }
 
   if (days === 1) {
@@ -86,19 +68,12 @@ const formatDate = (
     return `${days} days ago`;
   }
 
-  return date.toLocaleDateString(
-    "en-US",
-    {
-      month: "short",
-      day: "numeric",
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
 
-      year:
-        date.getFullYear() !==
-        now.getFullYear()
-          ? "numeric"
-          : undefined,
-    },
-  );
+    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 };
 
 const NoteList = ({
@@ -111,85 +86,42 @@ const NoteList = ({
   filters = {},
 
   searchQuery = "",
+
+  onNoteCountChange,
 }: NoteListProps) => {
-  const {
-    favorite,
-    deleted,
-    tag_id,
-  } = filters;
+  const { favorite, deleted, tag_id } = filters;
 
-  const [
-    notes,
-    setNotes,
-  ] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
 
-  const [
-    isLoading,
-    setIsLoading,
-  ] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [
-    error,
-    setError,
-  ] = useState("");
+  const [error, setError] = useState("");
 
-  const [
-    currentPage,
-    setCurrentPage,
-  ] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [
-    totalPages,
-    setTotalPages,
-  ] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const [
-    noteToDelete,
-    setNoteToDelete,
-  ] = useState<Note | null>(
-    null,
-  );
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
 
-  const [
-    noteToRestore,
-    setNoteToRestore,
-  ] = useState<Note | null>(
-    null,
-  );
+  const [noteToRestore, setNoteToRestore] = useState<Note | null>(null);
 
-  const [
-    isDeleting,
-    setIsDeleting,
-  ] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const [
-    isRestoring,
-    setIsRestoring,
-  ] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
-  const [
-    debouncedSearchQuery,
-    setDebouncedSearchQuery,
-  ] = useState(
-    searchQuery,
-  );
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
   /*
-   * Reset to page 1 when
-   * filters or search changes.
-   */
-
-  /*
-   * Debounce search.
+   * Debounce search and
+   * return to page 1.
    */
 
   useEffect(() => {
-    const timeout =
-      setTimeout(() => {
-        setDebouncedSearchQuery(
-          searchQuery,
-        );
-      }, 400);
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+
+      setCurrentPage(1);
+    }, 400);
 
     return () => {
       clearTimeout(timeout);
@@ -201,53 +133,41 @@ const NoteList = ({
    */
 
   useEffect(() => {
-    const loadNotes =
-      async () => {
-        try {
-          setIsLoading(true);
+    const loadNotes = async () => {
+      try {
+        setIsLoading(true);
 
-          setError("");
+        setError("");
 
-          const response =
-            await getNotes({
-              favorite,
+        const response = await getNotes({
+          favorite,
 
-              deleted,
+          deleted,
 
-              tag_id,
+          tag_id,
 
-              q:
-                debouncedSearchQuery ||
-                undefined,
+          q: debouncedSearchQuery || undefined,
 
-              page:
-                currentPage,
+          page: currentPage,
 
-              limit:
-                NOTES_PER_PAGE,
-            });
+          limit: NOTES_PER_PAGE,
+        });
 
-          setNotes(
-            response.items,
-          );
+        setNotes(response.items);
 
-          setTotalPages(
-            response.total_pages,
-          );
-        } catch (error) {
-          console.error(
-            error,
-          );
+        setTotalPages(response.total_pages);
 
-          setError(
-            error instanceof Error
-              ? error.message
-              : "Failed to load notes",
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      };
+        onNoteCountChange?.(response.total);
+      } catch (error) {
+        console.error(error);
+
+        setError(
+          error instanceof Error ? error.message : "Failed to load notes",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     loadNotes();
   }, [
@@ -256,6 +176,7 @@ const NoteList = ({
     tag_id,
     debouncedSearchQuery,
     currentPage,
+    onNoteCountChange,
   ]);
 
   /*
@@ -263,20 +184,12 @@ const NoteList = ({
    * in sidebar mode.
    */
 
-  const sortedNotes = [
-    ...notes,
-  ].sort((a, b) => {
-    if (
-      a.id ===
-      selectedNoteId
-    ) {
+  const sortedNotes = [...notes].sort((a, b) => {
+    if (a.id === selectedNoteId) {
       return -1;
     }
 
-    if (
-      b.id ===
-      selectedNoteId
-    ) {
+    if (b.id === selectedNoteId) {
       return 1;
     }
 
@@ -284,279 +197,168 @@ const NoteList = ({
   });
 
   const displayedNotes =
-    variant === "sidebar"
-      ? sortedNotes.slice(0, 4)
-      : sortedNotes;
+    variant === "sidebar" ? sortedNotes.slice(0, 4) : sortedNotes;
 
-  const noteMatchesFilters = (
-    note: Note,
-  ) => {
-    if (
-      favorite !== undefined &&
-      note.is_favorite !==
-        favorite
-    ) {
+  const noteMatchesFilters = (note: Note) => {
+    if (favorite !== undefined && note.is_favorite !== favorite) {
       return false;
     }
 
-    if (
-      deleted !== undefined &&
-      note.is_deleted !==
-        deleted
-    ) {
+    if (deleted !== undefined && note.is_deleted !== deleted) {
       return false;
     }
 
-    if (
-      tag_id !== undefined &&
-      !note.tags.some(
-        (tag) =>
-          tag.id === tag_id,
-      )
-    ) {
+    if (tag_id !== undefined && !note.tags.some((tag) => tag.id === tag_id)) {
       return false;
     }
 
     return true;
   };
 
-  const handleFavoriteToggle =
-    async (
-      note: Note,
-    ) => {
-      try {
-        const updatedNote =
-          await updateNote(
-            note.id,
-            {
-              is_favorite:
-                !note.is_favorite,
-            },
+  const handleFavoriteToggle = async (note: Note) => {
+    try {
+      const updatedNote = await updateNote(note.id, {
+        is_favorite: !note.is_favorite,
+      });
+
+      setNotes((currentNotes) => {
+        if (!noteMatchesFilters(updatedNote)) {
+          return currentNotes.filter(
+            (currentNote) => currentNote.id !== updatedNote.id,
           );
+        }
 
-        setNotes(
-          (
-            currentNotes,
-          ) => {
-            if (
-              !noteMatchesFilters(
-                updatedNote,
-              )
-            ) {
-              return currentNotes.filter(
-                (
-                  currentNote,
-                ) =>
-                  currentNote.id !==
-                  updatedNote.id,
-              );
-            }
-
-            return currentNotes.map(
-              (
-                currentNote,
-              ) =>
-                currentNote.id ===
-                updatedNote.id
-                  ? updatedNote
-                  : currentNote,
-            );
-          },
+        return currentNotes.map((currentNote) =>
+          currentNote.id === updatedNote.id ? updatedNote : currentNote,
         );
-      } catch (error) {
-        console.error(
-          error,
-        );
-      }
-    };
-
-  const handleDeleteClick = (
-    noteId: number,
-  ) => {
-    const selectedNote =
-      notes.find(
-        (note) =>
-          note.id === noteId,
-      );
-
-    if (selectedNote) {
-      setNoteToDelete(
-        selectedNote,
-      );
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const handleRestoreClick = (
-    noteId: number,
-  ) => {
-    const selectedNote =
-      notes.find(
-        (note) =>
-          note.id === noteId,
-      );
+  const handleDeleteClick = (noteId: number) => {
+    const selectedNote = notes.find((note) => note.id === noteId);
 
     if (selectedNote) {
-      setNoteToRestore(
-        selectedNote,
-      );
+      setNoteToDelete(selectedNote);
     }
   };
 
-  const handleConfirmDelete =
-    async () => {
-      if (!noteToDelete) {
-        return;
+  const handleRestoreClick = (noteId: number) => {
+    const selectedNote = notes.find((note) => note.id === noteId);
+
+    if (selectedNote) {
+      setNoteToRestore(selectedNote);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!noteToDelete) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      setError("");
+
+      if (noteToDelete.is_deleted) {
+        await permanentlyDeleteNote(noteToDelete.id);
+      } else {
+        await deleteNote(noteToDelete.id);
       }
 
-      try {
-        setIsDeleting(true);
+      /*
+       * Reload current page
+       * after deletion.
+       */
 
-        setError("");
+      const response = await getNotes({
+        favorite,
 
-        if (
-          noteToDelete.is_deleted
-        ) {
-          await permanentlyDeleteNote(
-            noteToDelete.id,
-          );
-        } else {
-          await deleteNote(
-            noteToDelete.id,
-          );
-        }
+        deleted,
 
-        /*
-         * Reload current page
-         * after deletion.
-         */
+        tag_id,
 
-        const response =
-          await getNotes({
-            favorite,
-            deleted,
-            tag_id,
+        q: debouncedSearchQuery || undefined,
 
-            q:
-              debouncedSearchQuery ||
-              undefined,
+        page: currentPage,
 
-            page:
-              currentPage,
+        limit: NOTES_PER_PAGE,
+      });
 
-            limit:
-              NOTES_PER_PAGE,
-          });
+      // go back
 
-        /*
-         * If we deleted the last
-         * note on a page, go back.
-         */
+      if (response.items.length === 0 && currentPage > 1) {
+        setCurrentPage((page) => page - 1);
+      } else {
+        setNotes(response.items);
 
-        if (
-          response.items.length ===
-            0 &&
-          currentPage > 1
-        ) {
-          setCurrentPage(
-            (page) =>
-              page - 1,
-          );
-        } else {
-          setNotes(
-            response.items,
-          );
+        setTotalPages(response.total_pages);
 
-          setTotalPages(
-            response.total_pages,
-          );
-        }
-
-        setNoteToDelete(
-          null,
-        );
-      } catch (error) {
-        console.error(
-          error,
-        );
-
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to delete note",
-        );
-      } finally {
-        setIsDeleting(false);
-      }
-    };
-
-  const handleConfirmRestore =
-    async () => {
-      if (!noteToRestore) {
-        return;
+        onNoteCountChange?.(response.total);
       }
 
-      try {
-        setIsRestoring(true);
+      setNoteToDelete(null);
+    } catch (error) {
+      console.error(error);
 
-        setError("");
+      setError(
+        error instanceof Error ? error.message : "Failed to delete note",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-        await restoreNote(
-          noteToRestore.id,
-        );
+  const handleConfirmRestore = async () => {
+    if (!noteToRestore) {
+      return;
+    }
 
-        const response =
-          await getNotes({
-            favorite,
-            deleted,
-            tag_id,
+    try {
+      setIsRestoring(true);
 
-            q:
-              debouncedSearchQuery ||
-              undefined,
+      setError("");
 
-            page:
-              currentPage,
+      await restoreNote(noteToRestore.id);
 
-            limit:
-              NOTES_PER_PAGE,
-          });
+      const response = await getNotes({
+        favorite,
 
-        if (
-          response.items.length ===
-            0 &&
-          currentPage > 1
-        ) {
-          setCurrentPage(
-            (page) =>
-              page - 1,
-          );
-        } else {
-          setNotes(
-            response.items,
-          );
+        deleted,
 
-          setTotalPages(
-            response.total_pages,
-          );
-        }
+        tag_id,
 
-        setNoteToRestore(
-          null,
-        );
-      } catch (error) {
-        console.error(
-          error,
-        );
+        q: debouncedSearchQuery || undefined,
 
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to restore note",
-        );
-      } finally {
-        setIsRestoring(false);
+        page: currentPage,
+
+        limit: NOTES_PER_PAGE,
+      });
+
+      if (response.items.length === 0 && currentPage > 1) {
+        setCurrentPage((page) => page - 1);
+      } else {
+        setNotes(response.items);
+
+        setTotalPages(response.total_pages);
+
+        onNoteCountChange?.(response.total);
       }
-    };
+
+      setNoteToRestore(null);
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        error instanceof Error ? error.message : "Failed to restore note",
+      );
+    } finally {
+      setIsRestoring(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -572,10 +374,7 @@ const NoteList = ({
     );
   }
 
-  if (
-    error &&
-    notes.length === 0
-  ) {
+  if (error && notes.length === 0) {
     return (
       <p
         className="
@@ -647,113 +446,53 @@ const NoteList = ({
               }
             `}
           >
-            {displayedNotes.map(
-              (note) => (
-                <NoteCard
-                  key={note.id}
+            {displayedNotes.map((note) => (
+              <NoteCard
+                key={note.id}
+                id={note.id}
+                title={note.title}
+                preview={note.content}
+                date={formatDate(note.updated_at)}
+                tags={note.tags}
+                isFavorite={note.is_favorite}
+                isDeleted={note.is_deleted}
+                isSelected={note.id === selectedNoteId}
+                variant={variant}
+                onClick={() => onNoteClick(note)}
+                onFavoriteToggle={(id) => {
+                  const selectedNote = notes.find((note) => note.id === id);
 
-                  id={note.id}
-
-                  title={note.title}
-
-                  preview={
-                    note.content
+                  if (selectedNote) {
+                    handleFavoriteToggle(selectedNote);
                   }
-
-                  date={formatDate(
-                    note.updated_at,
-                  )}
-
-                  tags={note.tags}
-
-                  isFavorite={
-                    note.is_favorite
-                  }
-
-                  isDeleted={
-                    note.is_deleted
-                  }
-
-                  isSelected={
-                    note.id ===
-                    selectedNoteId
-                  }
-
-                  variant={
-                    variant
-                  }
-
-                  onClick={() =>
-                    onNoteClick(
-                      note,
-                    )
-                  }
-
-                  onFavoriteToggle={(
-                    id,
-                  ) => {
-                    const selectedNote =
-                      notes.find(
-                        (note) =>
-                          note.id ===
-                          id,
-                      );
-
-                    if (
-                      selectedNote
-                    ) {
-                      handleFavoriteToggle(
-                        selectedNote,
-                      );
-                    }
-                  }}
-
-                  onDelete={
-                    handleDeleteClick
-                  }
-
-                  onRestore={
-                    handleRestoreClick
-                  }
-                />
-              ),
-            )}
+                }}
+                onDelete={handleDeleteClick}
+                onRestore={handleRestoreClick}
+              />
+            ))}
           </section>
 
-          {/*
-           * Only show pagination
-           * in grid mode.
-           */}
+          {/* Pagination */}
 
           {variant === "grid" && (
             <Pagination
-              currentPage={
-                currentPage
-              }
-
-              totalPages={
-                totalPages
-              }
-
-              onPageChange={
-                setCurrentPage
-              }
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
             />
           )}
         </>
       )}
 
-      <ConfirmationModal
-        isOpen={
-          noteToDelete !== null
-        }
+      {/* Delete Confirmation */}
 
+      <ConfirmationModal
+        isOpen={noteToDelete !== null}
         title={
           noteToDelete?.is_deleted
             ? "Permanently delete note?"
             : "Move note to trash?"
         }
-
         description={
           noteToDelete
             ? noteToDelete.is_deleted
@@ -761,58 +500,31 @@ const NoteList = ({
               : `"${noteToDelete.title}" will be moved to the trash.`
             : ""
         }
-
         cancelLabel="Cancel"
-
         confirmLabel={
-          noteToDelete?.is_deleted
-            ? "Delete Permanently"
-            : "Move to Trash"
+          noteToDelete?.is_deleted ? "Delete Permanently" : "Move to Trash"
         }
-
-        onCancel={() =>
-          setNoteToDelete(null)
-        }
-
-        onConfirm={
-          handleConfirmDelete
-        }
-
-        isLoading={
-          isDeleting
-        }
-
+        onCancel={() => setNoteToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
         danger
       />
 
+      {/* Restore Confirmation */}
+
       <ConfirmationModal
-        isOpen={
-          noteToRestore !== null
-        }
-
+        isOpen={noteToRestore !== null}
         title="Restore note?"
-
         description={
           noteToRestore
             ? `"${noteToRestore.title}" will be restored to your notes.`
             : ""
         }
-
         cancelLabel="Cancel"
-
         confirmLabel="Restore"
-
-        onCancel={() =>
-          setNoteToRestore(null)
-        }
-
-        onConfirm={
-          handleConfirmRestore
-        }
-
-        isLoading={
-          isRestoring
-        }
+        onCancel={() => setNoteToRestore(null)}
+        onConfirm={handleConfirmRestore}
+        isLoading={isRestoring}
       />
     </>
   );

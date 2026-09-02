@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react";
-
 import type { User } from "../../services/authService";
-import { getNotes } from "../../services/noteService";
 
 import Avatar from "../atoms/Avatar";
 import Button from "../atoms/Button";
@@ -9,33 +6,23 @@ import SearchBar from "../molecules/SearchBar";
 
 type AppHeaderProps = {
   user: User | null;
+
+  noteCount: number;
+
   onProfileClick: () => void;
+
   searchQuery: string;
+
   onSearchChange: (value: string) => void;
 };
 
 const AppHeader = ({
   user,
+  noteCount,
   onProfileClick,
   searchQuery,
   onSearchChange,
 }: AppHeaderProps) => {
-  const [noteCount, setNoteCount] = useState(0);
-
-  useEffect(() => {
-    const loadNoteCount = async () => {
-      try {
-        const response = await getNotes();
-
-        setNoteCount(response.total);
-      } catch (error) {
-        console.error("Failed to load note count:", error);
-      }
-    };
-
-    loadNoteCount();
-  }, []);
-
   return (
     <header
       className="
@@ -51,6 +38,7 @@ const AppHeader = ({
       "
     >
       {/* Greeting Section */}
+
       <div className="min-w-[260px]">
         <h1
           className="
@@ -71,20 +59,28 @@ const AppHeader = ({
             text-ink-muted
           "
         >
-          You have {noteCount} note{noteCount !== 1 ? "s" : ""}
+          You have {noteCount} note
+          {noteCount !== 1 ? "s" : ""}
         </p>
       </div>
 
       {/* Search */}
+
       <div className="w-full max-w-[300px]">
-        <SearchBar
-          value={searchQuery}
-          onChange={onSearchChange}
-        />
+        <SearchBar value={searchQuery} onChange={onSearchChange} />
       </div>
 
       {/* Header Actions */}
-      <div className="flex min-w-[260px] items-center justify-end gap-6">
+
+      <div
+        className="
+          flex
+          min-w-[260px]
+          items-center
+          justify-end
+          gap-6
+        "
+      >
         {user && (
           <Button
             variant="ghost"

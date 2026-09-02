@@ -11,13 +11,15 @@ import ProfileDrawerHeader from "../molecules/ProfileDrawerHeader";
 import ProfileForm from "../molecules/ProfileForm";
 import ProfileInfo from "../molecules/ProfileInfo";
 
+import { useToast } from "../../contexts/ToastContext"
+import getErrorMessage from "../../utils/getErrorMessage"
+
 type ProfileDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   name: string;
   email: string;
   onUserUpdate: (user: User) => void;
-  showToast: (message: string) => void;
 };
 
 const ProfileDrawer = ({
@@ -26,8 +28,9 @@ const ProfileDrawer = ({
   name,
   email,
   onUserUpdate,
-  showToast,
 }: ProfileDrawerProps) => {
+  const { showToast } = useToast();
+
   const navigate = useNavigate();
 
   const [updatedName, setUpdatedName] = useState(name);
@@ -87,7 +90,7 @@ const ProfileDrawer = ({
 
       onClose();
 
-      showToast("Name updated successfully");
+      showToast("Profile updated successfully", "success");
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -113,7 +116,7 @@ const ProfileDrawer = ({
         replace: true,
       });
     } catch (error) {
-      console.error(error);
+    showToast(getErrorMessage(error), "error"); 
     }
   };
 

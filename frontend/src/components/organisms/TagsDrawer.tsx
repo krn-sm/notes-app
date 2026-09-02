@@ -5,6 +5,9 @@ import { useState } from "react";
 import Button from "../atoms/Button";
 import Drawer from "../molecules/Drawer";
 
+import { useToast } from "../../contexts/ToastContext";
+import getErrorMessage from "../../utils/getErrorMessage";
+
 import {
   deleteTag,
   updateTag,
@@ -26,6 +29,8 @@ const TagsDrawer = ({
   tags,
   onTagsChange,
 }: TagsDrawerProps) => {
+  const { showToast } = useToast();
+
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
 
   const [editingName, setEditingName] = useState("");
@@ -65,7 +70,7 @@ const TagsDrawer = ({
 
       handleCancelEditing();
     } catch (error) {
-      console.error("Failed to update tag:", error);
+      showToast(getErrorMessage(error), "error");
     }
   };
 
@@ -77,7 +82,7 @@ const TagsDrawer = ({
         currentTags.filter((tag) => tag.id !== tagId),
       );
     } catch (error) {
-      console.error("Failed to delete tag:", error);
+      showToast(getErrorMessage(error), "error");
     }
   };
 

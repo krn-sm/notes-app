@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Button from "../atoms/Button";
 import Brand from "../molecules/Brand";
@@ -17,7 +17,7 @@ import NavItem from "../molecules/NavItem";
 
 import TagsDrawer from "./TagsDrawer";
 
-import { getTags, type TagWithCount } from "../../services/tagService";
+import { useTags } from "../../contexts/TagContext";
 
 const MAX_VISIBLE_TAGS = 5;
 
@@ -30,33 +30,11 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
   const [collapsed, setCollapsed] = useState(false);
 
-  const [tags, setTags] = useState<TagWithCount[]>([]);
+  const { tags, setTags, isLoading } = useTags();
 
-  const [isLoadingTags, setIsLoadingTags] = useState(true);
+  const sortedTags = [...tags].sort((a, b) => b.note_count - a.note_count);
 
-  useEffect(() => {
-    const loadTags = async () => {
-      try {
-        setIsLoadingTags(true);
-
-        const response = await getTags();
-
-        const sortedTags = [...response].sort(
-          (a, b) => b.note_count - a.note_count,
-        );
-
-        setTags(sortedTags);
-      } catch (error) {
-        console.error("Failed to load tags:", error);
-      } finally {
-        setIsLoadingTags(false);
-      }
-    };
-
-    loadTags();
-  }, []);
-
-  const visibleTags = tags.slice(0, MAX_VISIBLE_TAGS);
+  const visibleTags = sortedTags.slice(0, MAX_VISIBLE_TAGS);
 
   const handleOpenTagsDrawer = () => {
     setIsTagsDrawerOpen(true);
@@ -247,8 +225,13 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
               {/* Tag List */}
 
-              <div className="mt-5 space-y-1">
-                {isLoadingTags && (
+              <div
+                className="
+                  mt-5
+                  space-y-1
+                "
+              >
+                {isLoading && (
                   <p
                     className="
                       px-3
@@ -260,7 +243,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
                   </p>
                 )}
 
-                {!isLoadingTags &&
+                {!isLoading &&
                   visibleTags.map((tag) => (
                     <CategoryNavItem
                       key={tag.id}
@@ -270,7 +253,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
                     />
                   ))}
 
-                {!isLoadingTags && tags.length === 0 && (
+                {!isLoading && tags.length === 0 && (
                   <p
                     className="
                         px-3

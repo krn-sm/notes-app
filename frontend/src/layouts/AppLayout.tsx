@@ -1,67 +1,42 @@
-import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
-
-import Toast from "../components/molecules/Toast";
-import ProfileDrawer from "../components/organisms/ProfileDrawer";
-import Sidebar from "../components/organisms/SideBar";
+import { useState } from "react"
 
 import {
-  getCurrentUser,
-  type User,
-} from "../services/authService";
+  Outlet,
+} from "react-router-dom"
+
+import { useAuth } from "../contexts/AuthContext"
+
+import ProfileDrawer from "../components/organisms/ProfileDrawer"
+import Sidebar from "../components/organisms/SideBar"
 
 const AppLayout = () => {
-  const [isProfileOpen, setIsProfileOpen] =
-    useState(false);
+  const {
+    user,
+    setUser,
+  } = useAuth()
 
-  const [user, setUser] =
-    useState<User | null>(null);
-
-  const [toastMessage, setToastMessage] =
-    useState("");
+  const [
+    isProfileOpen,
+    setIsProfileOpen,
+  ] = useState(false)
 
   const [
     isCreatingNote,
     setIsCreatingNote,
-  ] = useState(false);
+  ] = useState(false)
 
   const [
     newNoteKey,
     setNewNoteKey,
-  ] = useState(0);
+  ] = useState(0)
 
   const handleNewNote = () => {
-    setIsCreatingNote(true);
+    setIsCreatingNote(true)
 
     setNewNoteKey(
       (current) => current + 1,
-    );
-  };
-
-  const showToast = (
-    message: string,
-  ) => {
-    setToastMessage(message);
-
-    setTimeout(() => {
-      setToastMessage("");
-    }, 3000);
-  };
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser =
-          await getCurrentUser();
-
-        setUser(currentUser);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    loadUser();
-  }, []);
+    )
+  }
 
   return (
     <div
@@ -132,21 +107,10 @@ const AppLayout = () => {
           name={user.name}
           email={user.email}
           onUserUpdate={setUser}
-          showToast={showToast}
         />
       )}
-
-      {/* Toast */}
-
-      <Toast
-        message={toastMessage}
-        isVisible={Boolean(toastMessage)}
-        onClose={() =>
-          setToastMessage("")
-        }
-      />
     </div>
-  );
-};
+  )
+}
 
-export default AppLayout;
+export default AppLayout

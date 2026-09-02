@@ -2,32 +2,18 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom"
-import { useEffect, useState } from "react"
 
 import Spinner from "../components/atoms/Spinner"
-import { getCurrentUser } from "../services/authService"
+
+import { useAuth } from "../contexts/AuthContext"
 
 const ProtectedRoute = () => {
-  const [isChecking, setIsChecking] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const {
+    user,
+    isLoading,
+  } = useAuth()
 
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        await getCurrentUser()
-
-        setIsAuthenticated(true)
-      } catch {
-        setIsAuthenticated(false)
-      } finally {
-        setIsChecking(false)
-      }
-    }
-
-    checkAuthentication()
-  }, [])
-
-  if (isChecking) {
+  if (isLoading) {
     return (
       <div
         className="
@@ -43,8 +29,13 @@ const ProtectedRoute = () => {
     )
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />
+  if (!user) {
+    return (
+      <Navigate
+        to="/"
+        replace
+      />
+    )
   }
 
   return <Outlet />

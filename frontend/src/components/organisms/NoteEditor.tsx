@@ -1,5 +1,5 @@
 import { ArrowLeft, CalendarDays } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import Button from "../atoms/Button";
 import EditorTitle from "../atoms/EditorTitle";
@@ -15,7 +15,7 @@ import EditorToolbar from "../molecules/EditorToolbar";
 
 import ConfirmationModal from "./ConfirmationModal";
 
-import { createTag, getTags } from "../../services/tagService";
+import { createTag } from "../../services/tagService";
 
 import {
   createNote,
@@ -23,6 +23,11 @@ import {
   updateNote,
   type Note,
 } from "../../services/noteService";
+
+import { useTags } from "../../contexts/TagContext";
+import { useToast } from "../../contexts/ToastContext";
+
+import getErrorMessage from "../../utils/getErrorMessage";
 
 type Tag = {
   id: number;
@@ -48,7 +53,10 @@ const NoteEditor = ({
   onNoteUpdated,
   onNoteDeleted,
 }: NoteEditorProps) => {
-  
+  const { showToast } = useToast();
+
+  const { tags: allTags, setTags: setAllTags } = useTags();
+
   const [title, setTitle] = useState(note?.title ?? "");
 
   const [content, setContent] = useState(note?.content ?? "");
@@ -100,15 +108,15 @@ const NoteEditor = ({
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
+
     setIsEditing(true);
   };
 
   const handleContentChange = (value: string) => {
     setContent(value);
+
     setIsEditing(true);
   };
-
-  const [allTags, setAllTags] = useState<Tag[]>([]);
 
   const handleAddTag = async () => {
     const trimmedTag = tagInput.trim();
@@ -131,7 +139,13 @@ const NoteEditor = ({
         name: trimmedTag,
       });
 
-      setAllTags((currentTags) => [...currentTags, newTag]);
+      setAllTags((currentTags) => [
+        ...currentTags,
+        {
+          ...newTag,
+          note_count: 0,
+        },
+      ]);
 
       setTags((currentTags) => [...currentTags, newTag]);
 
@@ -139,7 +153,7 @@ const NoteEditor = ({
 
       setIsEditing(true);
     } catch (error) {
-      console.error("Failed to create tag:", error);
+      showToast(getErrorMessage(error), "error");
     }
   };
 
@@ -161,20 +175,6 @@ const NoteEditor = ({
     setIsEditing(true);
   };
 
-  useEffect(() => {
-    const loadTags = async () => {
-      try {
-        const response = await getTags();
-
-        setAllTags(response);
-      } catch (error) {
-        console.error("Failed to load tags:", error);
-      }
-    };
-
-    loadTags();
-  }, []);
-
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -182,7 +182,9 @@ const NoteEditor = ({
       if (isNew) {
         const createdNote = await createNote({
           title: title.trim() || "Untitled Note",
+
           content,
+
           tag_ids: tags.map((tag) => tag.id),
         });
 
@@ -198,12 +200,15 @@ const NoteEditor = ({
       const updatedNote = await updateNote(note.id, {
         title,
         content,
+
         tag_ids: tags.map((tag) => tag.id),
       });
 
       savedNoteRef.current = {
         title: updatedNote.title,
+
         content: updatedNote.content,
+
         tags: updatedNote.tags.map((tag) => tag.id),
       };
 

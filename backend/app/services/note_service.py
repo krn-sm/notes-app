@@ -29,7 +29,7 @@ def create_note(
 
         if len(tags) != len(set(note_data.tag_ids)):
             raise ValueError(
-                "One or more tag IDs do not exist"
+                "One or more tags do not exist"
             )
 
         note.tags = tags
@@ -62,7 +62,9 @@ def get_notes(
         limit=limit,
     )
 
-    total_pages = ceil(total / limit) if total > 0 else 0
+    total_pages = ceil(
+        total / limit
+    ) if total > 0 else 0
 
     return {
         "items": notes,
@@ -91,7 +93,7 @@ def update_note(
     note_id: int,
     user_id: int,
     note_data: NoteUpdate,
-) -> Note | None:
+) -> Note:
 
     note = note_repository.get_note(
         db,
@@ -99,8 +101,15 @@ def update_note(
         user_id,
     )
 
-    if note is None or note.is_deleted:
-        return None
+    if note is None:
+        raise ValueError(
+            "Note not found"
+        )
+
+    if note.is_deleted:
+        raise ValueError(
+            "This note is in Trash. Restore it before editing."
+        )
 
     content_updated = False
 
@@ -125,7 +134,7 @@ def update_note(
                 set(note_data.tag_ids)
             ):
                 raise ValueError(
-                    "One or more tag IDs do not exist"
+                    "One or more tags do not exist"
                 )
 
             note.tags = tags
@@ -136,10 +145,14 @@ def update_note(
         content_updated = True
 
     if note_data.is_favorite is not None:
-        note.is_favorite = note_data.is_favorite
+        note.is_favorite = (
+            note_data.is_favorite
+        )
 
     if content_updated:
-        note.updated_at = datetime.now(timezone.utc)
+        note.updated_at = datetime.now(
+            timezone.utc,
+        )
 
     return note_repository.update_note(
         db,
@@ -151,7 +164,7 @@ def soft_delete_note(
     db: Session,
     note_id: int,
     user_id: int,
-) -> Note | None:
+) -> Note:
 
     note = note_repository.get_note(
         db,
@@ -159,8 +172,15 @@ def soft_delete_note(
         user_id,
     )
 
-    if note is None or note.is_deleted:
-        return None
+    if note is None:
+        raise ValueError(
+            "Note not found"
+        )
+
+    if note.is_deleted:
+        raise ValueError(
+            "This note is already in Trash"
+        )
 
     note.is_deleted = True
 
@@ -174,7 +194,7 @@ def restore_note(
     db: Session,
     note_id: int,
     user_id: int,
-) -> Note | None:
+) -> Note:
 
     note = note_repository.get_note(
         db,
@@ -182,8 +202,15 @@ def restore_note(
         user_id,
     )
 
-    if note is None or not note.is_deleted:
-        return None
+    if note is None:
+        raise ValueError(
+            "Note not found"
+        )
+
+    if not note.is_deleted:
+        raise ValueError(
+            "This note is not in Trash"
+        )
 
     note.is_deleted = False
 
@@ -205,8 +232,15 @@ def hard_delete_note(
         user_id,
     )
 
-    if note is None or not note.is_deleted:
-        return False
+    if note is None:
+        raise ValueError(
+            "Note not found"
+        )
+
+    if not note.is_deleted:
+        raise ValueError(
+            "Move the note to Trash before permanently deleting it"
+        )
 
     note_repository.hard_delete_note(
         db,

@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.schemas.tag import TagResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class NoteCreate(BaseModel):
     title: str = Field(
@@ -14,6 +14,33 @@ class NoteCreate(BaseModel):
         default_factory=list
     )
 
+    @field_validator("title")
+    def validate_title(
+        cls,
+        value: str,
+    ) -> str:
+        title = value.strip()
+
+        if not title:
+            raise ValueError(
+                "Title must not be empty"
+            )
+
+        return title
+
+    @field_validator("content")
+    def validate_content(
+        cls,
+        value: str,
+    ) -> str:
+        content = value.strip()
+
+        if not content:
+            raise ValueError(
+                "Content must not be empty"
+            )
+
+        return content
 
 class NoteUpdate(BaseModel):
     title: str | None = Field(
@@ -28,6 +55,39 @@ class NoteUpdate(BaseModel):
     tag_ids: list[int] | None = None
     is_favorite: bool | None = None
 
+    @field_validator("title")
+    def validate_title(
+        cls,
+        value: str | None,
+    ) -> str | None:
+        if value is None:
+            return value
+
+        title = value.strip()
+
+        if not title:
+            raise ValueError(
+                "Title must not be empty"
+            )
+
+        return title
+
+    @field_validator("content")
+    def validate_content(
+        cls,
+        value: str | None,
+    ) -> str | None:
+        if value is None:
+            return value
+
+        content = value.strip()
+
+        if not content:
+            raise ValueError(
+                "Content must not be empty"
+            )
+
+        return content
 
 class NoteResponse(BaseModel):
     id: int

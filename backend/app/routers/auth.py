@@ -1,8 +1,19 @@
-from fastapi import APIRouter, Depends, Cookie, HTTPException, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    Cookie,
+    HTTPException,
+    Response,
+    status,
+)
+
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.auth.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
+from app.auth.security import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    create_access_token,
+)
 from app.auth.dependencies import get_current_user
 from app.models import User
 
@@ -21,27 +32,34 @@ from app.schemas.auth import (
     LoginRequest,
 )
 
+
 router = APIRouter(
     prefix="/api/auth",
-    tags=["Auth"]
+    tags=["Auth"],
 )
 
 
-@router.post("/register",
+@router.post(
+    "/register",
     response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 def create_user_endpoint(
     user_data: UserCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
-        return create_user(db, user_data) 
+        return create_user(
+            db,
+            user_data,
+        )
+
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(error),
         )
+
 
 @router.get(
     "/me",
@@ -69,21 +87,30 @@ def update_user_endpoint(
     )
 
 
-@router.post("/login",
-    status_code=status.HTTP_204_NO_CONTENT
+@router.post(
+    "/login",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 def login_user_endpoint(
     response: Response,
     user_data: LoginRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    user = authenticate_user(db, user_data.email, user_data.password)
+    user = authenticate_user(
+        db,
+        user_data.email,
+        user_data.password,
+    )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    access_token = create_access_token(user.id)
+
+    access_token = create_access_token(
+        user.id,
+    )
 
     response.set_cookie(
         key="access_token",
@@ -99,16 +126,22 @@ def login_user_endpoint(
 
 @router.post(
     "/logout",
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 def logout_user_endpoint(
     response: Response,
-    access_token: str | None = Cookie(default=None),
+    access_token: str | None = Cookie(
+        default=None,
+    ),
     db: Session = Depends(get_db),
 ):
     if access_token is not None:
         cleanup_revoked_tokens(db)
-        revoke_token(db, access_token)
+
+        revoke_token(
+            db,
+            access_token,
+        )
 
     response.delete_cookie(
         key="access_token",

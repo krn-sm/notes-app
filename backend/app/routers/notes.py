@@ -1,15 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    status,
+)
+
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
 from app.auth.dependencies import get_current_user
+
 from app.schemas.note import (
     NoteCreate,
     PaginatedNotesResponse,
     NoteResponse,
     NoteUpdate,
 )
+
 from app.services.note_service import (
     create_note,
     get_note,
@@ -17,7 +26,7 @@ from app.services.note_service import (
     update_note,
     soft_delete_note,
     restore_note,
-    hard_delete_note
+    hard_delete_note,
 )
 
 
@@ -34,19 +43,28 @@ router = APIRouter(
 )
 def create_note_endpoint(
     note_data: NoteCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
-    return create_note(
-        db,
-        note_data,
-        current_user.id,
-    )
+    try:
+        return create_note(
+            db,
+            note_data,
+            current_user.id,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
 
 
 @router.get(
     "",
-    response_model=PaginatedNotesResponse
+    response_model=PaginatedNotesResponse,
 )
 def get_notes_endpoint(
     favorite: bool | None = None,
@@ -65,7 +83,9 @@ def get_notes_endpoint(
         ge=1,
         le=100,
     ),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
     return get_notes(
@@ -86,10 +106,16 @@ def get_notes_endpoint(
 )
 def get_note_endpoint(
     note_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
-    note = get_note(db, note_id, current_user.id)
+    note = get_note(
+        db,
+        note_id,
+        current_user.id,
+    )
 
     if note is None:
         raise HTTPException(
@@ -107,12 +133,23 @@ def get_note_endpoint(
 def update_note_endpoint(
     note_id: int,
     note_data: NoteUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
+    try:
+        note = update_note(
+            db,
+            note_id,
+            current_user.id,
+            note_data,
+        )
 
-    note = update_note(
-        db, note_id, current_user.id, note_data
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
         )
 
     if note is None:
@@ -130,10 +167,11 @@ def update_note_endpoint(
 )
 def soft_delete_note_endpoint(
     note_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
-
     note = soft_delete_note(
         db,
         note_id,
@@ -155,10 +193,11 @@ def soft_delete_note_endpoint(
 )
 def restore_note_endpoint(
     note_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
-
     note = restore_note(
         db,
         note_id,
@@ -180,10 +219,11 @@ def restore_note_endpoint(
 )
 def hard_delete_note_endpoint(
     note_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user,
+    ),
     db: Session = Depends(get_db),
 ):
-
     deleted = hard_delete_note(
         db,
         note_id,

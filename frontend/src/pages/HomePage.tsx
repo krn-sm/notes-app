@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import {
-  useLocation,
-  useOutletContext,
-  useParams,
-} from "react-router-dom";
+import { useLocation, useOutletContext, useParams } from "react-router-dom";
+
+import { useTags } from "../contexts/TagContext";
+import { useToast } from "../contexts/ToastContext";
 
 import AppHeader from "../components/organisms/AppHeader";
 import NoteEditor from "../components/organisms/NoteEditor";
@@ -12,11 +11,6 @@ import NoteList from "../components/organisms/NoteList";
 
 import type { User } from "../services/authService";
 import type { Note } from "../services/noteService";
-
-import {
-  getTags,
-  type TagWithCount,
-} from "../services/tagService";
 
 type OutletContext = {
   user: User | null;
@@ -41,69 +35,30 @@ const HomePage = () => {
     newNoteKey,
   } = useOutletContext<OutletContext>();
 
+  const { showToast } = useToast();
+
+  const { tags } = useTags();
+
   const location = useLocation();
 
   const { tagId } = useParams();
 
-  const [
-    searchQuery,
-    setSearchQuery,
-  ] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [
-    notesRefreshKey,
-    setNotesRefreshKey,
-  ] = useState(0);
+  const [noteCount, setNoteCount] = useState(0);
 
-  const [
-    selectedNote,
-    setSelectedNote,
-  ] = useState<Note | null>(null);
+  const [notesRefreshKey, setNotesRefreshKey] = useState(0);
 
-  const [
-    tags,
-    setTags,
-  ] = useState<TagWithCount[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
-  useEffect(() => {
-    const loadTags = async () => {
-      try {
-        const response = await getTags();
+  const activeNote = isCreatingNote ? null : selectedNote;
 
-        setTags(response);
-      } catch (error) {
-        console.error(
-          "Failed to load tags:",
-          error,
-        );
-      }
-    };
+  const isEditorOpen = activeNote !== null || isCreatingNote;
 
-    loadTags();
-  }, []);
-
-  /*
-   * When creating a new note, we intentionally
-   * ignore any previously selected note.
-   */
-
-  const activeNote =
-    isCreatingNote
-      ? null
-      : selectedNote;
-
-  const isEditorOpen =
-    activeNote !== null ||
-    isCreatingNote;
-
-  const handleNoteUpdated = (
-    updatedNote: Note,
-  ) => {
+  const handleNoteUpdated = (updatedNote: Note) => {
     setSelectedNote(updatedNote);
 
-    setNotesRefreshKey(
-      (current) => current + 1,
-    );
+    setNotesRefreshKey((current) => current + 1);
   };
 
   const handleNoteDeleted = () => {
@@ -111,23 +66,25 @@ const HomePage = () => {
 
     setIsCreatingNote(false);
 
-    setNotesRefreshKey(
-      (current) => current + 1,
-    );
+    setNotesRefreshKey((current) => current + 1);
   };
 
-  const handleNoteClick = (
-    note: Note,
-  ) => {
+  const handleNoteClick = (note: Note) => {
+    if (note.is_deleted) {
+      showToast(
+        "This note is in Trash. Restore it to continue editing.",
+        "warning",
+      );
+
+      return;
+    }
+
     setSelectedNote(note);
 
     setIsCreatingNote(false);
   };
 
-  const currentTag = tags.find(
-    (tag) =>
-      tag.id === Number(tagId),
-  );
+  const currentTag = tags.find((tag) => tag.id === Number(tagId));
 
   const getPageDetails = () => {
     const path = location.pathname;
@@ -136,8 +93,7 @@ const HomePage = () => {
       return {
         title: "Favorites",
 
-        description:
-          "Notes you've marked as favorites.",
+        description: "Notes you've marked as favorites.",
 
         filters: {
           favorite: true,
@@ -149,8 +105,7 @@ const HomePage = () => {
       return {
         title: "Trash",
 
-        description:
-          "Notes you've moved to trash.",
+        description: "Notes you've moved to trash.",
 
         filters: {
           deleted: true,
@@ -160,13 +115,11 @@ const HomePage = () => {
 
     if (tagId) {
       return {
-        title:
-          currentTag?.name ?? "Tags",
+        title: currentTag?.name ?? "Tags",
 
-        description:
-          currentTag
-            ? `Notes with the ${currentTag.name} tag.`
-            : "Notes with this tag.",
+        description: currentTag
+          ? `Notes with the ${currentTag.name} tag.`
+          : "Notes with this tag.",
 
         filters: {
           tag_id: Number(tagId),
@@ -177,18 +130,13 @@ const HomePage = () => {
     return {
       title: "All Notes",
 
-      description:
-        "Your thoughts, ideas, and memories.",
+      description: "Your thoughts, ideas, and memories.",
 
       filters: {},
     };
   };
 
-  const {
-    title,
-    description,
-    filters,
-  } = getPageDetails();
+  const { title, description, filters } = getPageDetails();
 
   return (
     <div
@@ -202,6 +150,7 @@ const HomePage = () => {
     >
       <AppHeader
         user={user}
+        noteCount={noteCount}
         onProfileClick={onProfileClick}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -235,11 +184,7 @@ const HomePage = () => {
               transition-all
               duration-300
 
-              ${
-                isEditorOpen
-                  ? "w-72 shrink-0"
-                  : "w-full"
-              }
+              ${isEditorOpen ? "w-72 shrink-0" : "w-full"}
             `}
           >
             {/* Page Heading */}
@@ -282,19 +227,12 @@ const HomePage = () => {
             >
               <NoteList
                 key={`${location.pathname}-${notesRefreshKey}`}
-                variant={
-                  isEditorOpen
-                    ? "sidebar"
-                    : "grid"
-                }
-                selectedNoteId={
-                  activeNote?.id ?? null
-                }
-                onNoteClick={
-                  handleNoteClick
-                }
+                variant={isEditorOpen ? "sidebar" : "grid"}
+                selectedNoteId={activeNote?.id ?? null}
+                onNoteClick={handleNoteClick}
                 filters={filters}
                 searchQuery={searchQuery}
+                onNoteCountChange={setNoteCount}
               />
             </div>
           </div>
@@ -314,11 +252,7 @@ const HomePage = () => {
               "
             >
               <NoteEditor
-                key={
-                  isCreatingNote
-                    ? `new-note-${newNoteKey}`
-                    : activeNote?.id
-                }
+                key={isCreatingNote ? `new-note-${newNoteKey}` : activeNote?.id}
                 note={activeNote ?? undefined}
                 isNew={isCreatingNote}
                 onClose={() => {
@@ -326,26 +260,15 @@ const HomePage = () => {
 
                   setIsCreatingNote(false);
                 }}
-                onNoteCreated={(
-                  createdNote,
-                ) => {
-                  setSelectedNote(
-                    createdNote,
-                  );
+                onNoteCreated={(createdNote) => {
+                  setSelectedNote(createdNote);
 
                   setIsCreatingNote(false);
 
-                  setNotesRefreshKey(
-                    (current) =>
-                      current + 1,
-                  );
+                  setNotesRefreshKey((current) => current + 1);
                 }}
-                onNoteUpdated={
-                  handleNoteUpdated
-                }
-                onNoteDeleted={
-                  handleNoteDeleted
-                }
+                onNoteUpdated={handleNoteUpdated}
+                onNoteDeleted={handleNoteDeleted}
               />
             </div>
           )}

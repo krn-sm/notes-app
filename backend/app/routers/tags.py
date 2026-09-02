@@ -1,16 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.database import get_db
 from app.models import User
-from app.schemas.tag import TagCreate, TagResponse, TagUpdate, TagWithCountResponse
+from app.schemas.tag import (
+    TagCreate,
+    TagResponse,
+    TagUpdate,
+    TagWithCountResponse,
+)
 from app.services.tag_service import (
     create_tag,
     delete_tag,
     get_tags,
     update_tag,
 )
+
 
 router = APIRouter(
     prefix="/api/tags",
@@ -30,29 +41,30 @@ def create_tag_endpoint(
 ):
     try:
         return create_tag(
-    db,
-    tag_data,
-    current_user.id,
-)
+            db,
+            tag_data,
+            current_user.id,
+        )
+
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error)
+            detail=str(error),
         )
 
 
 @router.get(
     "",
-    response_model=list[TagWithCountResponse]
+    response_model=list[TagWithCountResponse],
 )
 def get_tags_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     return get_tags(
-    db,
-    current_user.id,
-)
+        db,
+        current_user.id,
+    )
 
 
 @router.patch(
@@ -67,23 +79,25 @@ def update_tag_endpoint(
 ):
     try:
         tag = update_tag(
-    db,
-    tag_id,
-    tag_data,
-    current_user.id,
-) 
+            db,
+            tag_id,
+            tag_data,
+            current_user.id,
+        )
+
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(error),
         )
+
     if tag is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Tag not found",
         )
 
-    return tag    
+    return tag
 
 
 @router.delete(
