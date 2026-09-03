@@ -23,13 +23,13 @@ def get_notes(
         )
     )
 
-    # Filter favorites
+    #favorites
     if favorite is not None:
         statement = statement.where(
             Note.is_favorite == favorite
         )
 
-    # Filter by tag
+    #tag
     if tag_id is not None:
         statement = (
             statement
@@ -37,7 +37,7 @@ def get_notes(
             .where(Tag.id == tag_id)
         )
 
-    # Search by title, content, or tag name
+    # Search
     if query:
         search_term = f"%{query.strip()}%"
 
@@ -53,10 +53,8 @@ def get_notes(
             )
         )
 
-    # Remove duplicates caused by joining tags
     statement = statement.distinct()
 
-    # Get total count before pagination
     count_statement = (
         select(func.count())
         .select_from(statement.subquery())
@@ -64,7 +62,6 @@ def get_notes(
 
     total = db.scalar(count_statement) or 0
 
-    # Apply ordering and pagination
     statement = (
         statement
         .order_by(Note.updated_at.desc())

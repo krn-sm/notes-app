@@ -11,7 +11,6 @@ class RevokedToken(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        index=True,
     )
 
     jti: Mapped[str] = mapped_column(

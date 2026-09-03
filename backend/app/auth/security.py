@@ -23,10 +23,10 @@ def create_access_token(user_id: int) -> str:
     )
 
     payload = {
-    "sub": str(user_id),
-    "jti": str(uuid4()),
-    "exp": expiration,
-}
+        "sub": str(user_id),
+        "jti": str(uuid4()),
+        "exp": expiration,
+    }
 
     return jwt.encode(
         payload,

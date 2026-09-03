@@ -20,26 +20,32 @@ def get_current_user(
         )
     
     try:
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            access_token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+        
         user_id = payload.get("sub")
         jti = payload.get("jti")
 
-        revoked_token = auth_repository.get_revoked_token(
-            db,
-            jti,
-        )
-
-        if revoked_token:
-            raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has been revoked",
-        )
-
-        if user_id is None:
+        if user_id is None or jti is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
             )
+        
+        revoked_token = auth_repository.get_revoked_token(
+            db,
+            jti,
+        )
+        
+        if revoked_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked",
+        )
+
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class NoteCreate(BaseModel):
     title: str = Field(
-        min_length=1,
         max_length=200
     )
     content: str = Field(
@@ -40,12 +39,11 @@ class NoteCreate(BaseModel):
                 "Content must not be empty"
             )
 
-        return content
+        return value
 
 class NoteUpdate(BaseModel):
     title: str | None = Field(
         default=None,
-        min_length=1,
         max_length=200
     )
     content: str | None = Field(
@@ -87,7 +85,7 @@ class NoteUpdate(BaseModel):
                 "Content must not be empty"
             )
 
-        return content
+        return value
 
 class NoteResponse(BaseModel):
     id: int
