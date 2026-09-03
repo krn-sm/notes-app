@@ -133,7 +133,7 @@ const TagsDrawer = ({
             <div>
               <h2
                 className="
-                  font-heading
+                  font-display
                   text-xl
                   text-ink
                 "

@@ -19,9 +19,7 @@ type OutletContext = {
 
   isCreatingNote: boolean;
 
-  setIsCreatingNote: (
-    value: boolean,
-  ) => void;
+  setIsCreatingNote: (value: boolean) => void;
 
   newNoteKey: number;
 };
@@ -141,12 +139,12 @@ const HomePage = () => {
   return (
     <div
       className="
-        flex
-        h-screen
-        min-h-0
-        flex-col
-        overflow-hidden
-      "
+      flex
+      h-full
+      min-h-0
+      flex-col
+      bg-paper
+    "
     >
       <AppHeader
         user={user}
@@ -158,21 +156,20 @@ const HomePage = () => {
 
       <section
         className="
-          min-h-0
-          flex-1
-          overflow-hidden
-          p-8
-        "
+        min-h-0
+        flex-1
+        overflow-y-auto
+        p-8
+      "
       >
         <div
           className="
-            flex
-            h-full
-            min-h-0
-            gap-6
-            transition-all
-            duration-300
-          "
+          flex
+          min-h-full
+          gap-6
+          transition-all
+          duration-300
+        "
         >
           {/* Notes Area */}
 

@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Button from "../atoms/Button";
 import Brand from "../molecules/Brand";
@@ -31,6 +31,27 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const { tags, setTags, isLoading } = useTags();
+
+  /*
+   * Collapse sidebar on mobile
+   * when the screen size changes.
+   */
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(true);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const sortedTags = [...tags].sort((a, b) => b.note_count - a.note_count);
 
@@ -55,11 +76,16 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
           border-dashed
           border-[#4a3626]
           bg-leather
-          py-8
+          py-5
           transition-[width,padding]
           duration-300
           ease-in-out
-          ${collapsed ? "w-[88px] px-4" : "w-[300px] px-5"}
+
+          ${
+            collapsed
+              ? "w-16 px-2 sm:w-[88px] sm:px-4"
+              : "w-[260px] px-4 sm:w-[300px] sm:px-5"
+          }
         `}
       >
         {/* Collapse Button */}
@@ -71,10 +97,10 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
           className="
             absolute
             top-1/2
-            -right-[18px]
+            -right-[16px]
             z-50
-            h-9
-            w-9
+            h-8
+            w-8
             -translate-y-1/2
             !rounded-xl
             !p-0
@@ -82,10 +108,12 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
             border-solid
             border-leather
             shadow-[0_3px_10px_rgba(0,0,0,0.35)]
+            sm:h-9
+            sm:w-9
           "
         >
           {collapsed ? (
-            <ChevronRight size={17} strokeWidth={1.8} />
+            <ChevronRight size={16} strokeWidth={1.8} />
           ) : (
             <ChevronLeft size={17} strokeWidth={1.8} />
           )}
@@ -99,8 +127,10 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
         <div
           className={`
-            mt-10
+            mt-7
             shrink-0
+            sm:mt-10
+
             ${collapsed ? "" : "px-1"}
           `}
         >
@@ -108,12 +138,13 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
             variant="primary"
             onClick={onNewNote}
             className="
-              h-12
+              h-11
               w-full
               gap-2
               rounded-2xl
               font-body
               text-[15px]
+              sm:h-12
             "
           >
             <Plus size={20} strokeWidth={1.8} />
@@ -126,9 +157,10 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
         <nav
           className="
-            mt-6
+            mt-5
             shrink-0
             space-y-1
+            sm:mt-6
           "
         >
           <NavItem
@@ -161,10 +193,11 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
         <section
           className="
-            mt-10
+            mt-7
             min-h-0
             flex-1
             overflow-hidden
+            sm:mt-10
           "
         >
           {collapsed ? (
@@ -173,15 +206,16 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
               onClick={handleOpenTagsDrawer}
               aria-label="Open tags"
               className="
-                h-11
+                h-10
                 w-full
                 !p-0
                 text-paper/80
                 hover:!bg-[#3b2b22]
                 hover:text-paper
+                sm:h-11
               "
             >
-              <Tag size={20} strokeWidth={1.7} />
+              <Tag size={19} strokeWidth={1.7} />
             </Button>
           ) : (
             <>
@@ -208,8 +242,9 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
                   Tags
                 </p>
 
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleOpenTagsDrawer}
                   className="
                     font-body
@@ -220,7 +255,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
                   "
                 >
                   More...
-                </button>
+                </Button>
               </div>
 
               {/* Tag List */}

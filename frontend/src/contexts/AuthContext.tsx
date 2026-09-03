@@ -49,14 +49,9 @@ export const AuthProvider = ({
         await getCurrentUser();
 
       setUser(currentUser);
-    } catch (error) {
-      setUser(null);
-
-      console.error(
-        "Failed to get current user:",
-        error,
-      );
-    }
+    } catch {
+  setUser(null);
+}
   };
 
   useEffect(() => {

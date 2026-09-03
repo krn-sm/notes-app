@@ -73,27 +73,20 @@ const AppLayout = () => {
           overflow-hidden
         "
       >
-        <div
-          className="
-            h-full
-            overflow-hidden
-          "
-        >
-          <Outlet
-            context={{
-              user,
+        <Outlet
+          context={{
+            user,
 
-              onProfileClick: () =>
-                setIsProfileOpen(true),
+            onProfileClick: () =>
+              setIsProfileOpen(true),
 
-              isCreatingNote,
+            isCreatingNote,
 
-              setIsCreatingNote,
+            setIsCreatingNote,
 
-              newNoteKey,
-            }}
-          />
-        </div>
+            newNoteKey,
+          }}
+        />
       </main>
 
       {/* Profile Drawer */}

@@ -27,25 +27,34 @@ const AppHeader = ({
     <header
       className="
         flex
-        h-[112px]
         shrink-0
-        items-center
-        justify-between
+        flex-col
+        gap-4
         border-b
         border-line
         bg-paper
-        px-7
+        px-5
+        py-5
+
+        md:h-[112px]
+        md:flex-row
+        md:items-center
+        md:justify-between
+        md:px-7
+        md:py-0
       "
     >
-      {/* Greeting Section */}
+      {/* Greeting */}
 
-      <div className="min-w-[260px]">
+      <div className="shrink-0">
         <h1
           className="
             font-display
-            text-[30px]
+            text-2xl
             font-medium
             text-ink
+
+            md:text-[30px]
           "
         >
           Hello, {user?.name ?? "there"}
@@ -53,7 +62,7 @@ const AppHeader = ({
 
         <p
           className="
-            mt-2
+            mt-1
             font-body
             text-sm
             text-ink-muted
@@ -66,19 +75,28 @@ const AppHeader = ({
 
       {/* Search */}
 
-      <div className="w-full max-w-[300px]">
-        <SearchBar value={searchQuery} onChange={onSearchChange} />
+      <div
+        className="
+          w-full
+
+          md:max-w-[300px]
+        "
+      >
+        <SearchBar
+          value={searchQuery}
+          onChange={onSearchChange}
+        />
       </div>
 
-      {/* Header Actions */}
+      {/* Profile */}
 
       <div
         className="
           flex
-          min-w-[260px]
+          shrink-0
           items-center
-          justify-end
-          gap-6
+
+          md:justify-end
         "
       >
         {user && (

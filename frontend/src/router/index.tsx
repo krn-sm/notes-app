@@ -1,12 +1,15 @@
-import { createBrowserRouter } from "react-router-dom"
+import { createBrowserRouter } from "react-router-dom";
 
-import AppLayout from "../layouts/AppLayout"
+import AppLayout from "../layouts/AppLayout";
 
-import HomePage from "../pages/HomePage"
-import LoginPage from "../pages/LoginPage"
-import NotFoundPage from "../pages/NotFoundPage"
+import HomePage from "../pages/HomePage";
+import LoginPage from "../pages/LoginPage";
+import NotFoundPage from "../pages/NotFoundPage";
 
-import ProtectedRoute from "../routes/ProtectedRoute"
+import ProtectedRoute from "../routes/ProtectedRoute";
+
+import { AuthProvider } from "../contexts/AuthContext";
+import { TagProvider } from "../contexts/TagContext";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +18,13 @@ const router = createBrowserRouter([
   },
 
   {
-    element: <ProtectedRoute />,
+    element: (
+      <AuthProvider>
+        <TagProvider>
+          <ProtectedRoute />
+        </TagProvider>
+      </AuthProvider>
+    ),
     children: [
       {
         element: <AppLayout />,
@@ -50,6 +59,6 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFoundPage />,
   },
-])
+]);
 
-export default router
+export default router;

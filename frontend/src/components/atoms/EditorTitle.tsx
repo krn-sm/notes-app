@@ -1,19 +1,14 @@
 type EditorTitleProps = {
-  value: string
-  onChange: (value: string) => void
-}
+  value: string;
+  onChange: (value: string) => void;
+};
 
-const EditorTitle = ({
-  value,
-  onChange,
-}: EditorTitleProps) => {
+const EditorTitle = ({ value, onChange }: EditorTitleProps) => {
   return (
     <input
       type="text"
       value={value}
-      onChange={(event) =>
-        onChange(event.target.value)
-      }
+      onChange={(event) => onChange(event.target.value)}
       placeholder="Untitled"
       className="
         block
@@ -28,7 +23,7 @@ const EditorTitle = ({
         placeholder:text-ink-muted
       "
     />
-  )
-}
+  );
+};
 
-export default EditorTitle
+export default EditorTitle;

@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
- 
-import Button from "./Button";
- 
+import type { ReactNode } from "react"
+
+import Button from "./Button"
+
 type ToolbarButtonProps = {
-  children: ReactNode;
-  onClick?: () => void;
-  isActive?: boolean;
-  ariaLabel: string;
-  className?: string;
-};
- 
+  children: ReactNode
+  onClick?: () => void
+  isActive?: boolean
+  ariaLabel: string
+  className?: string
+}
+
 const ToolbarButton = ({
   children,
   onClick,
@@ -22,16 +22,18 @@ const ToolbarButton = ({
       type="button"
       variant="ghost"
       onMouseDown={(event) => {
-        event.preventDefault();
+        event.preventDefault()
       }}
       onClick={onClick}
       aria-label={ariaLabel}
       className={`
-        h-12
-        w-12
+        h-10
+        w-10
         shrink-0
-        p-0
+        !p-0
         transition
+        sm:h-12
+        sm:w-12
 
         ${
           isActive
@@ -54,7 +56,7 @@ const ToolbarButton = ({
     >
       {children}
     </Button>
-  );
-};
+  )
+}
 
 export default ToolbarButton

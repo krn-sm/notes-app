@@ -68,7 +68,7 @@ def update_user(
     user_data: UserUpdate,
 ) -> User:
 
-    user.name = user_data.name.strip()
+    user.name = user_data.name
 
     return auth_repository.update_user(
         db,

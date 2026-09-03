@@ -1,6 +1,10 @@
-type InputProps = React.InputHTMLAttributes<HTMLInputElement>
+type InputProps =
+  React.InputHTMLAttributes<HTMLInputElement>
 
-const Input = ({ className = "", ...props }: InputProps) => {
+const Input = ({
+  className = "",
+  ...props
+}: InputProps) => {
   return (
     <input
       className={`
@@ -10,10 +14,12 @@ const Input = ({ className = "", ...props }: InputProps) => {
         text-ink
         outline-none
         placeholder:text-ink-muted
+        focus-visible:ring-gold/50
 
         disabled:cursor-not-allowed
         disabled:text-ink-muted
         disabled:opacity-60
+
         ${className}
       `}
       {...props}

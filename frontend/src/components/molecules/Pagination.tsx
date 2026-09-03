@@ -1,4 +1,7 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 import Button from "../atoms/Button";
 
@@ -28,13 +31,18 @@ const Pagination = ({
         gap-2
       "
     >
+      {/* Previous */}
+
       <Button
         variant="ghost"
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() =>
+          onPageChange(currentPage - 1)
+        }
         disabled={currentPage === 1}
         className="
           h-9
           w-9
+          shrink-0
           !p-0
         "
         aria-label="Previous page"
@@ -42,41 +50,77 @@ const Pagination = ({
         <ChevronLeft size={18} />
       </Button>
 
-      <div
+      {/* Mobile */}
+
+      <p
         className="
-          flex
-          items-center
-          gap-1
+          min-w-[100px]
+          text-center
+          font-body
+          text-sm
+          text-ink-muted
+
+          sm:hidden
         "
       >
-        {Array.from({ length: totalPages }, (_, index) => {
-          const page = index + 1;
+        Page {currentPage} of {totalPages}
+      </p>
 
-          return (
-            <Button
-              key={page}
-              variant={currentPage === page ? "primary" : "ghost"}
-              onClick={() => onPageChange(page)}
-              className="
+      {/* Tablet and Desktop */}
+
+      <div
+        className="
+          hidden
+          items-center
+          gap-1
+
+          sm:flex
+        "
+      >
+        {Array.from(
+          { length: totalPages },
+          (_, index) => {
+            const page = index + 1;
+
+            return (
+              <Button
+                key={page}
+                variant={
+                  currentPage === page
+                    ? "primary"
+                    : "ghost"
+                }
+                onClick={() =>
+                  onPageChange(page)
+                }
+                className="
                   h-9
                   w-9
                   !p-0
                   text-sm
                 "
-            >
-              {page}
-            </Button>
-          );
-        })}
+              >
+                {page}
+              </Button>
+            );
+          },
+        )}
       </div>
+
+      {/* Next */}
 
       <Button
         variant="ghost"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
+        onClick={() =>
+          onPageChange(currentPage + 1)
+        }
+        disabled={
+          currentPage === totalPages
+        }
         className="
           h-9
           w-9
+          shrink-0
           !p-0
         "
         aria-label="Next page"
