@@ -1,12 +1,6 @@
-import {
-  ArrowLeft,
-  CalendarDays,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 
-import {
-  useRef,
-  useState,
-} from "react";
+import { useRef, useState } from "react";
 
 import Button from "../atoms/Button";
 import EditorTitle from "../atoms/EditorTitle";
@@ -46,41 +40,31 @@ type NoteEditorProps = {
 
   onClose: () => void;
 
-  onNoteCreated?: (
-    note: Note,
-  ) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 
-  onNoteUpdated?: (
-    note: Note,
-  ) => void;
+  onNoteCreated?: (note: Note) => void;
 
-  onNoteDeleted?: (
-    noteId: number,
-  ) => void;
+  onNoteUpdated?: (note: Note) => void;
+
+  onNoteDeleted?: (noteId: number) => void;
 };
 
 const NoteEditor = ({
   note,
   isNew = false,
   onClose,
+  onDirtyChange,
   onNoteCreated,
   onNoteUpdated,
   onNoteDeleted,
 }: NoteEditorProps) => {
   const { showToast } = useToast();
 
-  const {
-    tags: allTags,
-    setTags: setAllTags,
-  } = useTags();
+  const { tags: allTags, refreshTags } = useTags();
 
-  const [title, setTitle] = useState(
-    note?.title ?? "",
-  );
+  const [title, setTitle] = useState(note?.title ?? "");
 
-  const [content, setContent] = useState(
-    note?.content ?? "",
-  );
+  const [content, setContent] = useState(note?.content ?? "");
 
   const [tags, setTags] = useState<Tag[]>(
     note?.tags.map((tag) => ({
@@ -89,51 +73,46 @@ const NoteEditor = ({
     })) ?? [],
   );
 
-  const [tagInput, setTagInput] =
-    useState("");
+  const [isDirty, setIsDirty] = useState(isNew);
 
-  const [isEditing, setIsEditing] =
-    useState(isNew);
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+  const markAsDirty = () => {
+    if (!isDirty) {
+      setIsDirty(true);
 
-  const [isSaving, setIsSaving] =
-    useState(false);
+      onDirtyChange?.(true);
+    }
+  };
 
-  const [
-    isDeleteModalOpen,
-    setIsDeleteModalOpen,
-  ] = useState(false);
+  const markAsClean = () => {
+    setIsDirty(false);
 
-  const [isDeleting, setIsDeleting] =
-    useState(false);
+    onDirtyChange?.(false);
+  };
+  const [tagInput, setTagInput] = useState("");
 
-  const [isCopied, setIsCopied] =
-    useState(false);
+  const [isEditing, setIsEditing] = useState(isNew);
 
-  const [formatState, setFormatState] =
-    useState<EditorFormatState>({
-      bold: false,
-      italic: false,
-      underline: false,
-      bulletList: false,
-      orderedList: false,
-    });
+  const [isSaving, setIsSaving] = useState(false);
 
-  const editorRef =
-    useRef<EditorContentHandle>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const savedNoteRef = useRef({
-    title: note?.title ?? "",
-    content: note?.content ?? "",
-    tags:
-      note?.tags.map(
-        (tag) => tag.id,
-      ) ?? [],
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [isCopied, setIsCopied] = useState(false);
+
+  const [formatState, setFormatState] = useState<EditorFormatState>({
+    bold: false,
+    italic: false,
+    underline: false,
+    bulletList: false,
+    orderedList: false,
   });
 
+  const editorRef = useRef<EditorContentHandle>(null);
+
   const formattedDate = note
-    ? new Date(
-        note.updated_at,
-      ).toLocaleString("en-US", {
+    ? new Date(note.updated_at).toLocaleString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -142,137 +121,167 @@ const NoteEditor = ({
       })
     : "New note";
 
-  const handleTitleChange = (
-    value: string,
-  ) => {
+  const handleTitleChange = (value: string) => {
     setTitle(value);
 
     setIsEditing(true);
+
+    markAsDirty();
   };
 
-  const handleContentChange = (
-    value: string,
-  ) => {
+  const handleContentChange = (value: string) => {
     setContent(value);
 
     setIsEditing(true);
+
+    markAsDirty();
   };
 
-  const handleAddTag = async () => {
-    const trimmedTag =
-      tagInput.trim();
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
 
     if (!trimmedTag) {
       return;
     }
 
-    const tagAlreadyExists =
-      tags.some(
-        (tag) =>
-          tag.name.toLowerCase() ===
-          trimmedTag.toLowerCase(),
-      );
+    const selectedTag = tags.find(
+      (tag) => tag.name.toLowerCase() === trimmedTag.toLowerCase(),
+    );
 
-    if (tagAlreadyExists) {
+    if (selectedTag) {
       setTagInput("");
 
       return;
     }
 
-    try {
-      const newTag =
-        await createTag({
-          name: trimmedTag,
-        });
+    /*
+     * Check whether this tag already exists
+     * globally.
+     */
 
-      setAllTags(
-        (currentTags) => [
-          ...currentTags,
-          {
-            ...newTag,
-            note_count: 0,
-          },
-        ],
-      );
+    const existingTag = allTags.find(
+      (tag) => tag.name.toLowerCase() === trimmedTag.toLowerCase(),
+    );
 
-      setTags(
-        (currentTags) => [
-          ...currentTags,
-          newTag,
-        ],
-      );
+    if (existingTag) {
+      setTags((currentTags) => [
+        ...currentTags,
+        {
+          id: existingTag.id,
+          name: existingTag.name,
+        },
+      ]);
 
       setTagInput("");
 
       setIsEditing(true);
-    } catch (error) {
-      showToast(
-        error instanceof Error
-          ? error.message
-          : "Failed to create tag",
-        "error",
-      );
+      markAsDirty();
+      return;
     }
+
+    /*
+     * New tag.
+     *
+     * Don't create it in the backend yet.
+     * Give it a temporary negative ID.
+     */
+
+    const temporaryTag: Tag = {
+      id: -Date.now(),
+
+      name: trimmedTag,
+    };
+
+    setTags((currentTags) => [...currentTags, temporaryTag]);
+
+    setTagInput("");
+
+    setIsEditing(true);
+    markAsDirty();
   };
 
-  const handleSelectTag = (
-    tag: Tag,
-  ) => {
-    const alreadySelected =
-      tags.some(
-        (currentTag) =>
-          currentTag.id === tag.id,
-      );
+  const handleSelectTag = (tag: Tag) => {
+    const alreadySelected = tags.some((currentTag) => currentTag.id === tag.id);
 
     if (alreadySelected) {
       return;
     }
 
-    setTags(
-      (currentTags) => [
-        ...currentTags,
-        tag,
-      ],
-    );
+    setTags((currentTags) => [...currentTags, tag]);
 
     setIsEditing(true);
+    markAsDirty();
   };
 
-  const handleRemoveTag = (
-    tagId: number,
-  ) => {
-    setTags(
-      (currentTags) =>
-        currentTags.filter(
-          (tag) =>
-            tag.id !== tagId,
-        ),
-    );
+  const handleRemoveTag = (tagId: number) => {
+    setTags((currentTags) => currentTags.filter((tag) => tag.id !== tagId));
 
     setIsEditing(true);
+    markAsDirty();
+  };
+
+  /*
+   * Creates any temporary tags
+   * and returns tags with real IDs.
+   */
+
+  const resolveTagsBeforeSave = async (): Promise<Tag[]> => {
+    const resolvedTags: Tag[] = [];
+
+    for (const tag of tags) {
+      /*
+       * Real tag.
+       */
+
+      if (tag.id > 0) {
+        resolvedTags.push(tag);
+
+        continue;
+      }
+
+      /*
+       * Temporary tag.
+       *
+       * Create it only now.
+       */
+
+      const createdTag = await createTag({
+        name: tag.name,
+      });
+
+      resolvedTags.push(createdTag);
+    }
+
+    return resolvedTags;
   };
 
   const handleSave = async () => {
     try {
       setIsSaving(true);
 
+
+      const resolvedTags = await resolveTagsBeforeSave();
+
+      const tagIds = resolvedTags.map((tag) => tag.id);
+
       if (isNew) {
-        const createdNote =
-          await createNote({
-            title:
-              title.trim() ||
-              "Untitled Note",
+        const createdNote = await createNote({
+          title: title.trim() || "Untitled Note",
 
-            content,
+          content,
 
-            tag_ids: tags.map(
-              (tag) => tag.id,
-            ),
-          });
+          tag_ids: tagIds,
+        });
 
-        onNoteCreated?.(
-          createdNote,
-        );
+        setTags(resolvedTags);
+
+        await refreshTags();
+
+        onNoteCreated?.(createdNote);
+
+        setIsEditing(false);
+
+        markAsClean();
 
         return;
       }
@@ -281,46 +290,27 @@ const NoteEditor = ({
         return;
       }
 
-      const updatedNote =
-        await updateNote(
-          note.id,
-          {
-            title,
-            content,
+      const updatedNote = await updateNote(note.id, {
+        title,
+        content,
 
-            tag_ids: tags.map(
-              (tag) => tag.id,
-            ),
-          },
-        );
+        tag_ids: tagIds,
+      });
 
-      savedNoteRef.current = {
-        title: updatedNote.title,
+      setTags(resolvedTags);
 
-        content:
-          updatedNote.content,
+      await refreshTags();
 
-        tags:
-          updatedNote.tags.map(
-            (tag) => tag.id,
-          ),
-      };
-
-      onNoteUpdated?.(
-        updatedNote,
-      );
+      onNoteUpdated?.(updatedNote);
 
       setIsEditing(false);
+
+      markAsClean();
     } catch (error) {
-      console.error(
-        "Failed to save note:",
-        error,
-      );
+      console.error("Failed to save note:", error);
 
       showToast(
-        error instanceof Error
-          ? error.message
-          : "Failed to save note",
+        error instanceof Error ? error.message : "Failed to save note",
         "error",
       );
     } finally {
@@ -331,32 +321,22 @@ const NoteEditor = ({
   const handleUndo = () => {
     editorRef.current?.focus();
 
-    document.execCommand(
-      "undo",
-    );
+    document.execCommand("undo");
   };
 
   const handleRedo = () => {
     editorRef.current?.focus();
 
-    document.execCommand(
-      "redo",
-    );
+    document.execCommand("redo");
   };
 
-  const handleFormat = (
-    command: string,
-  ) => {
-    editorRef.current?.format(
-      command,
-    );
+  const handleFormat = (command: string) => {
+    editorRef.current?.format(command);
   };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(
-        `${title}\n\n${content}`,
-      );
+      await navigator.clipboard.writeText(`${title}\n\n${content}`);
 
       setIsCopied(true);
 
@@ -364,15 +344,9 @@ const NoteEditor = ({
         setIsCopied(false);
       }, 2000);
     } catch (error) {
-      console.error(
-        "Failed to copy note:",
-        error,
-      );
+      console.error("Failed to copy note:", error);
 
-      showToast(
-        "Failed to copy note",
-        "error",
-      );
+      showToast("Failed to copy note", "error");
     }
   };
 
@@ -380,43 +354,36 @@ const NoteEditor = ({
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete =
-    async () => {
-      if (!note) {
-        return;
-      }
+  const handleConfirmDelete = async () => {
+    if (!note) {
+      return;
+    }
 
-      try {
-        setIsDeleting(true);
+    try {
+      setIsDeleting(true);
 
-        await deleteNote(note.id);
+      await deleteNote(note.id);
 
-        setIsDeleteModalOpen(false);
+      await refreshTags();
 
-        onNoteDeleted?.(note.id);
+      setIsDeleteModalOpen(false);
 
-        onClose();
+      onNoteDeleted?.(note.id);
 
-        showToast(
-          "Note moved to trash",
-          "success",
-        );
-      } catch (error) {
-        console.error(
-          "Failed to delete note:",
-          error,
-        );
+      onClose();
 
-        showToast(
-          error instanceof Error
-            ? error.message
-            : "Failed to delete note",
-          "error",
-        );
-      } finally {
-        setIsDeleting(false);
-      }
-    };
+      showToast("Note moved to trash", "success");
+    } catch (error) {
+      console.error("Failed to delete note:", error);
+
+      showToast(
+        error instanceof Error ? error.message : "Failed to delete note",
+        "error",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -456,7 +423,15 @@ const NoteEditor = ({
         >
           <Button
             variant="ghost"
-            onClick={onClose}
+            onClick={() => {
+              if (isDirty) {
+                setIsDiscardModalOpen(true);
+
+                return;
+              }
+
+              onClose();
+            }}
             className="
               h-11
               w-11
@@ -487,7 +462,7 @@ const NoteEditor = ({
             className="
               min-w-0
               flex-1
-              overflow-x-auto
+              overflow-hidden
             "
           >
             <EditorToolbar
@@ -500,34 +475,14 @@ const NoteEditor = ({
               onSave={handleSave}
               onUndo={handleUndo}
               onRedo={handleRedo}
-              onBold={() =>
-                handleFormat("bold")
-              }
-              onItalic={() =>
-                handleFormat("italic")
-              }
-              onUnderline={() =>
-                handleFormat(
-                  "underline",
-                )
-              }
-              onBulletList={() =>
-                handleFormat(
-                  "insertUnorderedList",
-                )
-              }
-              onOrderedList={() =>
-                handleFormat(
-                  "insertOrderedList",
-                )
-              }
-              onSelectTag={
-                handleSelectTag
-              }
+              onBold={() => handleFormat("bold")}
+              onItalic={() => handleFormat("italic")}
+              onUnderline={() => handleFormat("underline")}
+              onBulletList={() => handleFormat("insertUnorderedList")}
+              onOrderedList={() => handleFormat("insertOrderedList")}
+              onSelectTag={handleSelectTag}
               onCopy={handleCopy}
-              onDelete={
-                handleDeleteClick
-              }
+              onDelete={handleDeleteClick}
             />
           </div>
         </header>
@@ -575,12 +530,7 @@ const NoteEditor = ({
                 flex-1
               "
             >
-              <EditorTitle
-                value={title}
-                onChange={
-                  handleTitleChange
-                }
-              />
+              <EditorTitle value={title} onChange={handleTitleChange} />
             </div>
 
             <div
@@ -597,13 +547,9 @@ const NoteEditor = ({
                 sm:text-sm
               "
             >
-              <CalendarDays
-                size={15}
-              />
+              <CalendarDays size={15} />
 
-              <span>
-                {formattedDate}
-              </span>
+              <span>{formattedDate}</span>
             </div>
           </div>
 
@@ -621,12 +567,8 @@ const NoteEditor = ({
             <EditorContent
               ref={editorRef}
               value={content}
-              onChange={
-                handleContentChange
-              }
-              onFormatChange={
-                setFormatState
-              }
+              onChange={handleContentChange}
+              onFormatChange={setFormatState}
             />
           </div>
 
@@ -643,22 +585,16 @@ const NoteEditor = ({
             <EditorTags
               tags={tags}
               value={tagInput}
-              onChange={
-                setTagInput
-              }
+              onChange={setTagInput}
               onAdd={handleAddTag}
-              onRemove={
-                handleRemoveTag
-              }
+              onRemove={handleRemoveTag}
             />
           </div>
 
           {/* Footer */}
 
           <div className="shrink-0">
-            <EditorFooter
-              content={content}
-            />
+            <EditorFooter content={content} />
           </div>
         </div>
       </section>
@@ -667,23 +603,35 @@ const NoteEditor = ({
 
       {!isNew && (
         <ConfirmationModal
-          isOpen={
-            isDeleteModalOpen
-          }
+          isOpen={isDeleteModalOpen}
           title="Move note to trash?"
           description={`"${title}" will be moved to the trash.`}
           cancelLabel="Cancel"
           confirmLabel="Move to Trash"
-          onCancel={() =>
-            setIsDeleteModalOpen(false)
-          }
-          onConfirm={
-            handleConfirmDelete
-          }
+          onCancel={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
           isLoading={isDeleting}
           danger
         />
       )}
+      {/* Discard Changes Confirmation */}
+
+      <ConfirmationModal
+        isOpen={isDiscardModalOpen}
+        title="Discard unsaved changes?"
+        description="Your changes haven't been saved. They will be lost if you close this note."
+        cancelLabel="Keep Editing"
+        confirmLabel="Discard Changes"
+        onCancel={() => setIsDiscardModalOpen(false)}
+        onConfirm={() => {
+          setIsDiscardModalOpen(false);
+
+          markAsClean();
+
+          onClose();
+        }}
+        danger
+      />
     </>
   );
 };

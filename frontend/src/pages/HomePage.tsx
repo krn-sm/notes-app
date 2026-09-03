@@ -1,11 +1,17 @@
 import { useState } from "react";
 
-import { useLocation, useOutletContext, useParams } from "react-router-dom";
+import {
+  useBlocker,
+  useLocation,
+  useOutletContext,
+  useParams,
+} from "react-router-dom";
 
 import { useTags } from "../contexts/TagContext";
 import { useToast } from "../contexts/ToastContext";
 
 import AppHeader from "../components/organisms/AppHeader";
+import ConfirmationModal from "../components/organisms/ConfirmationModal";
 import NoteEditor from "../components/organisms/NoteEditor";
 import NoteList from "../components/organisms/NoteList";
 
@@ -25,6 +31,10 @@ type OutletContext = {
 
   setIsEditorOpen: (value: boolean) => void;
 
+  isEditorDirty: boolean;
+
+  setIsEditorDirty: (value: boolean) => void;
+
   newNoteKey: number;
 };
 
@@ -35,6 +45,8 @@ const HomePage = () => {
     isCreatingNote,
     setIsCreatingNote,
     setIsEditorOpen,
+    isEditorDirty,
+    setIsEditorDirty,
     newNoteKey,
   } = useOutletContext<OutletContext>();
 
@@ -58,8 +70,12 @@ const HomePage = () => {
 
   const isEditorVisible = activeNote !== null || isCreatingNote;
 
+  const blocker = useBlocker(isEditorVisible && isEditorDirty);
+
   const handleNoteUpdated = (updatedNote: Note) => {
     setSelectedNote(updatedNote);
+
+    setIsEditorDirty(false);
 
     setNotesRefreshKey((current) => current + 1);
   };
@@ -70,6 +86,10 @@ const HomePage = () => {
     setIsCreatingNote(false);
 
     setIsEditorOpen(false);
+
+    setIsEditorDirty(false);
+
+    setNoteCount((current) => Math.max(0, current - 1));
 
     setNotesRefreshKey((current) => current + 1);
   };
@@ -89,6 +109,8 @@ const HomePage = () => {
     setIsCreatingNote(false);
 
     setIsEditorOpen(true);
+
+    setIsEditorDirty(false);
   };
 
   const currentTag = tags.find((tag) => tag.id === Number(tagId));
@@ -151,169 +173,201 @@ const HomePage = () => {
     setIsCreatingNote(false);
 
     setIsEditorOpen(false);
+
+    setIsEditorDirty(false);
+  };
+
+  const handleDiscardNavigation = () => {
+    setIsEditorDirty(false);
+
+    blocker.proceed?.();
+  };
+
+  const handleCancelNavigation = () => {
+    blocker.reset?.();
   };
 
   return (
-    <div
-      className="
-        flex
-        h-full
-        min-h-0
-        flex-col
-        bg-paper
-      "
-    >
-      {/* App Header */}
-
-      <AppHeader
-        user={user}
-        noteCount={noteCount}
-        onProfileClick={onProfileClick}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
-
-      {/* Main Content */}
-
-      <section
+    <>
+      <div
         className="
+          flex
+          h-full
           min-h-0
-          flex-1
-          overflow-y-auto
-          p-5
-
-          sm:p-6
-
-          md:p-8
+          flex-col
+          bg-paper
         "
       >
-        <div
+        {/* App Header */}
+
+        <AppHeader
+          user={user}
+          noteCount={noteCount}
+          onProfileClick={onProfileClick}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+
+        {/* Main Content */}
+
+        <section
           className="
-            flex
-            min-h-full
-            gap-6
+            min-h-0
+            flex-1
+            overflow-y-auto
+            p-5
+
+            sm:p-6
+
+            md:p-8
           "
         >
-          {/* Notes Area */}
-
           <div
-            className={`
+            className="
               flex
-              min-h-0
-              flex-col
-              transition-all
-              duration-300
-
-              ${
-                isEditorVisible
-                  ? `
-                    hidden
-
-                    md:flex
-                    md:w-72
-                    md:shrink-0
-                  `
-                  : "w-full"
-              }
-            `}
+              min-h-full
+              gap-6
+            "
           >
-            {/* Page Heading */}
+            {/* Notes Area */}
 
             <div
-              className="
-                mb-6
-                shrink-0
-              "
-            >
-              <h1
-                className="
-                  font-display
-                  text-3xl
-                  text-ink
-
-                  md:text-4xl
-                "
-              >
-                {title}
-              </h1>
-
-              <p
-                className="
-                  mt-1
-                  font-body
-                  text-sm
-                  text-ink-muted
-                "
-              >
-                {description}
-              </p>
-            </div>
-
-            {/* Note List */}
-
-            <div
-              className="
+              className={`
+                flex
                 min-h-0
-                flex-1
-                overflow-hidden
-              "
-            >
-              <NoteList
-                key={`${location.pathname}-${notesRefreshKey}`}
-                variant={isEditorVisible ? "sidebar" : "grid"}
-                selectedNoteId={activeNote?.id ?? null}
-                onNoteClick={handleNoteClick}
-                filters={filters}
-                searchQuery={searchQuery}
-                onNoteCountChange={setNoteCount}
-              />
-            </div>
-          </div>
-
-          {/* Editor */}
-
-          {isEditorVisible && (
-            <div
-              className="
-                fixed
-                inset-0
-                z-40
-                min-h-0
-                bg-paper
-                animate-in
-                fade-in
-                slide-in-from-right-4
+                flex-col
+                transition-all
                 duration-300
 
-                md:static
-                md:z-auto
-                md:min-w-0
-                md:flex-1
-                md:bg-transparent
-              "
+                ${
+                  isEditorVisible
+                    ? `
+                      hidden
+
+                      md:flex
+                      md:w-72
+                      md:shrink-0
+                    `
+                    : "w-full"
+                }
+              `}
             >
-              <NoteEditor
-                key={isCreatingNote ? `new-note-${newNoteKey}` : activeNote?.id}
-                note={activeNote ?? undefined}
-                isNew={isCreatingNote}
-                onClose={handleCloseEditor}
-                onNoteCreated={(createdNote) => {
-                  setSelectedNote(createdNote);
+              {/* Page Heading */}
 
-                  setIsCreatingNote(false);
+              <div
+                className="
+                  mb-6
+                  shrink-0
+                "
+              >
+                <h1
+                  className="
+                    font-display
+                    text-3xl
+                    text-ink
 
-                  setIsEditorOpen(true);
+                    md:text-4xl
+                  "
+                >
+                  {title}
+                </h1>
 
-                  setNotesRefreshKey((current) => current + 1);
-                }}
-                onNoteUpdated={handleNoteUpdated}
-                onNoteDeleted={handleNoteDeleted}
-              />
+                <p
+                  className="
+                    mt-1
+                    font-body
+                    text-sm
+                    text-ink-muted
+                  "
+                >
+                  {description}
+                </p>
+              </div>
+
+              {/* Note List */}
+
+              <div
+                className="
+                  min-h-0
+                  flex-1
+                  overflow-hidden
+                "
+              >
+                <NoteList
+                  key={`${location.pathname}-${notesRefreshKey}`}
+                  variant={isEditorVisible ? "sidebar" : "grid"}
+                  selectedNoteId={activeNote?.id ?? null}
+                  onNoteClick={handleNoteClick}
+                  filters={filters}
+                  searchQuery={searchQuery}
+                  onNoteCountChange={setNoteCount}
+                />
+              </div>
             </div>
-          )}
-        </div>
-      </section>
-    </div>
+
+            {/* Editor */}
+
+            {isEditorVisible && (
+              <div
+                className="
+                  fixed
+                  inset-0
+                  z-40
+                  min-h-0
+                  bg-paper
+                  animate-in
+                  fade-in
+                  slide-in-from-right-4
+                  duration-300
+
+                  md:static
+                  md:z-auto
+                  md:min-w-0
+                  md:flex-1
+                  md:bg-transparent
+                "
+              >
+                <NoteEditor
+                  key={
+                    isCreatingNote ? `new-note-${newNoteKey}` : activeNote?.id
+                  }
+                  note={activeNote ?? undefined}
+                  isNew={isCreatingNote}
+                  onClose={handleCloseEditor}
+                  onDirtyChange={setIsEditorDirty}
+                  onNoteCreated={(createdNote) => {
+                    setSelectedNote(createdNote);
+
+                    setIsCreatingNote(false);
+
+                    setIsEditorOpen(true);
+
+                    setIsEditorDirty(false);
+
+                    setNoteCount((current) => current + 1);
+
+                    setNotesRefreshKey((current) => current + 1);
+                  }}
+                  onNoteUpdated={handleNoteUpdated}
+                  onNoteDeleted={handleNoteDeleted}
+                />
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <ConfirmationModal
+        isOpen={blocker.state === "blocked"}
+        title="Discard unsaved changes?"
+        description="Your changes haven't been saved. They will be lost if you continue."
+        cancelLabel="Keep Editing"
+        confirmLabel="Discard Changes"
+        onCancel={handleCancelNavigation}
+        onConfirm={handleDiscardNavigation}
+        danger
+      />
+    </>
   );
 };
 
