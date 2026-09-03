@@ -1,28 +1,19 @@
 type EditorFooterProps = {
-  content: string
-}
+  content: string;
+};
 
-const EditorFooter = ({
-  content,
-}: EditorFooterProps) => {
-  const getPlainText = (
-    html: string,
-  ) => {
-    const element =
-      document.createElement("div")
+const EditorFooter = ({ content }: EditorFooterProps) => {
+  const getPlainText = (html: string) => {
+    const element = document.createElement("div");
 
-    element.innerHTML = html
+    element.innerHTML = html;
 
-    return element.textContent ?? ""
-  }
+    return element.textContent ?? "";
+  };
 
-  const plainText =
-    getPlainText(content)
+  const plainText = getPlainText(content);
 
-  const wordCount = plainText
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length
+  const wordCount = plainText.trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <div
@@ -33,23 +24,22 @@ const EditorFooter = ({
         justify-end
         border-t
         border-line
-        pt-4
+        pt-3
+        sm:pt-4
       "
     >
       <p
         className="
           font-body
-          text-sm
+          text-xs
           text-ink-muted
+          sm:text-sm
         "
       >
-        {wordCount}{" "}
-        {wordCount === 1
-          ? "word"
-          : "words"}
+        {wordCount} {wordCount === 1 ? "word" : "words"}
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default EditorFooter
+export default EditorFooter;

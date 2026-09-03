@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Drawer from "../molecules/Drawer";
 
 import { logout, updateProfile, type User } from "../../services/authService";
@@ -33,7 +34,9 @@ const ProfileDrawer = ({
   const navigate = useNavigate();
 
   const [updatedName, setUpdatedName] = useState(name);
+
   const [isLoading, setIsLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
@@ -47,6 +50,7 @@ const ProfileDrawer = ({
   const handleClose = () => {
     if (hasChanges) {
       setIsDiscardModalOpen(true);
+
       return;
     }
 
@@ -55,6 +59,7 @@ const ProfileDrawer = ({
 
   const handleDiscard = () => {
     setUpdatedName(name);
+
     setError("");
 
     setIsDiscardModalOpen(false);
@@ -74,6 +79,7 @@ const ProfileDrawer = ({
 
   const confirmSave = async () => {
     setError("");
+
     setIsLoading(true);
 
     try {
@@ -116,11 +122,9 @@ const ProfileDrawer = ({
       });
     } catch (error) {
       showToast(
-      error instanceof Error
-        ? error.message
-        : "Failed to logout",
-      "error",
-    );
+        error instanceof Error ? error.message : "Failed to logout",
+        "error",
+      );
     }
   };
 
@@ -133,8 +137,11 @@ const ProfileDrawer = ({
           className="
             flex-1
             overflow-y-auto
-            px-8
-            py-10
+            px-5
+            py-7
+
+            sm:px-8
+            sm:py-10
           "
         >
           <ProfileInfo name={name} email={email} />
@@ -154,6 +161,7 @@ const ProfileDrawer = ({
       </Drawer>
 
       {/* Discard Changes */}
+
       <ConfirmationModal
         isOpen={isDiscardModalOpen}
         title="Discard changes?"
@@ -166,6 +174,7 @@ const ProfileDrawer = ({
       />
 
       {/* Save Changes */}
+
       <ConfirmationModal
         isOpen={isSaveModalOpen}
         title="Save changes?"
@@ -178,6 +187,7 @@ const ProfileDrawer = ({
       />
 
       {/* Logout */}
+
       <ConfirmationModal
         isOpen={isLogoutModalOpen}
         title="Log out?"

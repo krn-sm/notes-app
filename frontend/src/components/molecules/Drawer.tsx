@@ -6,11 +6,7 @@ type DrawerProps = {
   children: ReactNode;
 };
 
-const Drawer = ({
-  isOpen,
-  onClose,
-  children,
-}: DrawerProps) => {
+const Drawer = ({ isOpen, onClose, children }: DrawerProps) => {
   return (
     <>
       {/* Overlay */}
@@ -45,6 +41,7 @@ const Drawer = ({
           w-full
           max-w-[420px]
           flex-col
+          overflow-y-auto
           border-l
           border-line
           bg-paper
@@ -53,11 +50,7 @@ const Drawer = ({
           duration-300
           ease-in-out
 
-          ${
-            isOpen
-              ? "translate-x-0"
-              : "translate-x-full"
-          }
+          ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
       >
         {children}

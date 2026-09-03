@@ -1,40 +1,28 @@
-import {
-  RotateCcw,
-  Star,
-  Trash2,
-} from "lucide-react"
+import { RotateCcw, Star, Trash2 } from "lucide-react";
 
-import Button from "../atoms/Button"
-import Badge from "../atoms/Badge"
+import Badge from "../atoms/Badge";
+import Button from "../atoms/Button";
 
 type Tag = {
-  id: number
-  name: string
-}
+  id: number;
+  name: string;
+};
 
 type NoteCardProps = {
-  id: number
-  title: string
-  preview: string
-  date: string
-  tags?: Tag[]
-  isFavorite?: boolean
-  isDeleted?: boolean
-  isSelected?: boolean
-  variant?: "grid" | "sidebar"
-  onClick: (
-    id: number,
-  ) => void
-  onFavoriteToggle: (
-    id: number,
-  ) => void
-  onDelete: (
-    id: number,
-  ) => void
-  onRestore?: (
-    id: number,
-  ) => void
-}
+  id: number;
+  title: string;
+  preview: string;
+  date: string;
+  tags?: Tag[];
+  isFavorite?: boolean;
+  isDeleted?: boolean;
+  isSelected?: boolean;
+  variant?: "grid" | "sidebar";
+  onClick: (id: number) => void;
+  onFavoriteToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+  onRestore?: (id: number) => void;
+};
 
 const NoteCard = ({
   id,
@@ -51,20 +39,16 @@ const NoteCard = ({
   onDelete,
   onRestore,
 }: NoteCardProps) => {
-
-  const isSidebar =
-    variant === "sidebar"
+  const isSidebar = variant === "sidebar";
 
   const plainPreview = preview
-  .replace(/<[^>]*>/g, "")
-  .replace(/&nbsp;/g, " ")
-  .trim()
-  
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+
   return (
     <article
-      onClick={() =>
-        onClick(id)
-      }
+      onClick={() => onClick(id)}
       className={`
         flex
         cursor-pointer
@@ -75,22 +59,29 @@ const NoteCard = ({
         shadow-sm
         transition
 
-        ${
-          isSidebar
-            ? `
-              h-[165px]
-              shrink-0
-              items-center
-              justify-center
-              px-6
-              py-5
-              text-center
-            `
-            : `
-              min-h-[280px]
-              p-6
-            `
-        }
+${
+  isSidebar
+    ? `
+    h-[150px]
+    shrink-0
+    items-center
+    justify-center
+    px-4
+    py-4
+    text-center
+
+    sm:h-[165px]
+    sm:px-6
+    sm:py-5
+  `
+    : `
+    min-h-[250px]
+    p-4
+
+    sm:min-h-[280px]
+    sm:p-6
+  `
+}
 
         ${
           isSelected
@@ -107,12 +98,12 @@ const NoteCard = ({
         }
       `}
     >
-{isSidebar ? (
-  <>
-    {/* Title */}
+      {isSidebar ? (
+        <>
+          {/* Title */}
 
-    <h2
-      className="
+          <h2
+            className="
         line-clamp-3
         font-display
         text-xl
@@ -120,24 +111,24 @@ const NoteCard = ({
         leading-snug
         text-ink
       "
-    >
-      {title}
-    </h2>
+          >
+            {title}
+          </h2>
 
-    {/* Time */}
+          {/* Time */}
 
-    <p
-      className="
+          <p
+            className="
         mt-auto
         font-body
         text-sm
         text-ink-muted
       "
-    >
-      {date}
-    </p>
-  </>
-) : (
+          >
+            {date}
+          </p>
+        </>
+      ) : (
         <>
           {/* Title */}
 
@@ -179,15 +170,9 @@ const NoteCard = ({
                 gap-2
               "
             >
-              {tags.map(
-                (tag) => (
-                  <Badge
-                    key={tag.id}
-                  >
-                    {tag.name}
-                  </Badge>
-                ),
-              )}
+              {tags.map((tag) => (
+                <Badge key={tag.id}>{tag.name}</Badge>
+              ))}
             </div>
           )}
 
@@ -218,9 +203,12 @@ const NoteCard = ({
 
             <div
               className="
+                mt-auto
                 flex
                 items-center
+                justify-between
                 gap-3
+                pt-6
               "
             >
               {isDeleted ? (
@@ -228,12 +216,10 @@ const NoteCard = ({
                   <Button
                     variant="ghost"
                     type="button"
-                    onClick={(
-                      event,
-                    ) => {
-                      event.stopPropagation()
+                    onClick={(event) => {
+                      event.stopPropagation();
 
-                      onRestore?.(id)
+                      onRestore?.(id);
                     }}
                     className="
                       p-1
@@ -241,20 +227,16 @@ const NoteCard = ({
                     "
                     aria-label="Restore note"
                   >
-                    <RotateCcw
-                      size={20}
-                    />
+                    <RotateCcw size={20} />
                   </Button>
 
                   <Button
                     variant="ghost"
                     type="button"
-                    onClick={(
-                      event,
-                    ) => {
-                      event.stopPropagation()
+                    onClick={(event) => {
+                      event.stopPropagation();
 
-                      onDelete(id)
+                      onDelete(id);
                     }}
                     className="
                       p-1
@@ -262,9 +244,7 @@ const NoteCard = ({
                     "
                     aria-label="Delete permanently"
                   >
-                    <Trash2
-                      size={20}
-                    />
+                    <Trash2 size={20} />
                   </Button>
                 </>
               ) : (
@@ -272,42 +252,32 @@ const NoteCard = ({
                   <Button
                     variant="ghost"
                     type="button"
-                    onClick={(
-                      event,
-                    ) => {
-                      event.stopPropagation()
+                    onClick={(event) => {
+                      event.stopPropagation();
 
-                      onFavoriteToggle(id)
+                      onFavoriteToggle(id);
                     }}
                     className="
                       p-1
                       hover:text-accent
                     "
                     aria-label={
-                      isFavorite
-                        ? "Remove from favorites"
-                        : "Add to favorites"
+                      isFavorite ? "Remove from favorites" : "Add to favorites"
                     }
                   >
                     <Star
                       size={21}
-                      className={
-                        isFavorite
-                          ? "fill-current text-accent"
-                          : ""
-                      }
+                      className={isFavorite ? "fill-current text-accent" : ""}
                     />
                   </Button>
 
                   <Button
                     variant="ghost"
                     type="button"
-                    onClick={(
-                      event,
-                    ) => {
-                      event.stopPropagation()
+                    onClick={(event) => {
+                      event.stopPropagation();
 
-                      onDelete(id)
+                      onDelete(id);
                     }}
                     className="
                       p-1
@@ -315,9 +285,7 @@ const NoteCard = ({
                     "
                     aria-label="Move to trash"
                   >
-                    <Trash2
-                      size={20}
-                    />
+                    <Trash2 size={20} />
                   </Button>
                 </>
               )}
@@ -326,7 +294,7 @@ const NoteCard = ({
         </>
       )}
     </article>
-  )
-}
+  );
+};
 
-export default NoteCard
+export default NoteCard;

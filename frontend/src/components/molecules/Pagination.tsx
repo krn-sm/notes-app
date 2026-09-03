@@ -1,7 +1,4 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import Button from "../atoms/Button";
 
@@ -35,9 +32,7 @@ const Pagination = ({
 
       <Button
         variant="ghost"
-        onClick={() =>
-          onPageChange(currentPage - 1)
-        }
+        onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="
           h-9
@@ -77,46 +72,33 @@ const Pagination = ({
           sm:flex
         "
       >
-        {Array.from(
-          { length: totalPages },
-          (_, index) => {
-            const page = index + 1;
+        {Array.from({ length: totalPages }, (_, index) => {
+          const page = index + 1;
 
-            return (
-              <Button
-                key={page}
-                variant={
-                  currentPage === page
-                    ? "primary"
-                    : "ghost"
-                }
-                onClick={() =>
-                  onPageChange(page)
-                }
-                className="
+          return (
+            <Button
+              key={page}
+              variant={currentPage === page ? "primary" : "ghost"}
+              onClick={() => onPageChange(page)}
+              className="
                   h-9
                   w-9
                   !p-0
                   text-sm
                 "
-              >
-                {page}
-              </Button>
-            );
-          },
-        )}
+            >
+              {page}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Next */}
 
       <Button
         variant="ghost"
-        onClick={() =>
-          onPageChange(currentPage + 1)
-        }
-        disabled={
-          currentPage === totalPages
-        }
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
         className="
           h-9
           w-9

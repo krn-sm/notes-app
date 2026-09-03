@@ -21,6 +21,10 @@ type OutletContext = {
 
   setIsCreatingNote: (value: boolean) => void;
 
+  isEditorOpen: boolean;
+
+  setIsEditorOpen: (value: boolean) => void;
+
   newNoteKey: number;
 };
 
@@ -30,6 +34,7 @@ const HomePage = () => {
     onProfileClick,
     isCreatingNote,
     setIsCreatingNote,
+    setIsEditorOpen,
     newNoteKey,
   } = useOutletContext<OutletContext>();
 
@@ -51,7 +56,7 @@ const HomePage = () => {
 
   const activeNote = isCreatingNote ? null : selectedNote;
 
-  const isEditorOpen = activeNote !== null || isCreatingNote;
+  const isEditorVisible = activeNote !== null || isCreatingNote;
 
   const handleNoteUpdated = (updatedNote: Note) => {
     setSelectedNote(updatedNote);
@@ -63,6 +68,8 @@ const HomePage = () => {
     setSelectedNote(null);
 
     setIsCreatingNote(false);
+
+    setIsEditorOpen(false);
 
     setNotesRefreshKey((current) => current + 1);
   };
@@ -80,6 +87,8 @@ const HomePage = () => {
     setSelectedNote(note);
 
     setIsCreatingNote(false);
+
+    setIsEditorOpen(true);
   };
 
   const currentTag = tags.find((tag) => tag.id === Number(tagId));
@@ -136,16 +145,26 @@ const HomePage = () => {
 
   const { title, description, filters } = getPageDetails();
 
+  const handleCloseEditor = () => {
+    setSelectedNote(null);
+
+    setIsCreatingNote(false);
+
+    setIsEditorOpen(false);
+  };
+
   return (
     <div
       className="
-      flex
-      h-full
-      min-h-0
-      flex-col
-      bg-paper
-    "
+        flex
+        h-full
+        min-h-0
+        flex-col
+        bg-paper
+      "
     >
+      {/* App Header */}
+
       <AppHeader
         user={user}
         noteCount={noteCount}
@@ -154,22 +173,26 @@ const HomePage = () => {
         onSearchChange={setSearchQuery}
       />
 
+      {/* Main Content */}
+
       <section
         className="
-        min-h-0
-        flex-1
-        overflow-y-auto
-        p-8
-      "
+          min-h-0
+          flex-1
+          overflow-y-auto
+          p-5
+
+          sm:p-6
+
+          md:p-8
+        "
       >
         <div
           className="
-          flex
-          min-h-full
-          gap-6
-          transition-all
-          duration-300
-        "
+            flex
+            min-h-full
+            gap-6
+          "
         >
           {/* Notes Area */}
 
@@ -181,7 +204,17 @@ const HomePage = () => {
               transition-all
               duration-300
 
-              ${isEditorOpen ? "w-72 shrink-0" : "w-full"}
+              ${
+                isEditorVisible
+                  ? `
+                    hidden
+
+                    md:flex
+                    md:w-72
+                    md:shrink-0
+                  `
+                  : "w-full"
+              }
             `}
           >
             {/* Page Heading */}
@@ -194,9 +227,11 @@ const HomePage = () => {
             >
               <h1
                 className="
-                  font-serif
+                  font-display
                   text-3xl
-                  text-stone-900
+                  text-ink
+
+                  md:text-4xl
                 "
               >
                 {title}
@@ -205,8 +240,9 @@ const HomePage = () => {
               <p
                 className="
                   mt-1
+                  font-body
                   text-sm
-                  text-stone-500
+                  text-ink-muted
                 "
               >
                 {description}
@@ -224,7 +260,7 @@ const HomePage = () => {
             >
               <NoteList
                 key={`${location.pathname}-${notesRefreshKey}`}
-                variant={isEditorOpen ? "sidebar" : "grid"}
+                variant={isEditorVisible ? "sidebar" : "grid"}
                 selectedNoteId={activeNote?.id ?? null}
                 onNoteClick={handleNoteClick}
                 filters={filters}
@@ -236,31 +272,37 @@ const HomePage = () => {
 
           {/* Editor */}
 
-          {isEditorOpen && (
+          {isEditorVisible && (
             <div
               className="
-                min-w-0
+                fixed
+                inset-0
+                z-40
                 min-h-0
-                flex-1
+                bg-paper
                 animate-in
                 fade-in
                 slide-in-from-right-4
                 duration-300
+
+                md:static
+                md:z-auto
+                md:min-w-0
+                md:flex-1
+                md:bg-transparent
               "
             >
               <NoteEditor
                 key={isCreatingNote ? `new-note-${newNoteKey}` : activeNote?.id}
                 note={activeNote ?? undefined}
                 isNew={isCreatingNote}
-                onClose={() => {
-                  setSelectedNote(null);
-
-                  setIsCreatingNote(false);
-                }}
+                onClose={handleCloseEditor}
                 onNoteCreated={(createdNote) => {
                   setSelectedNote(createdNote);
 
                   setIsCreatingNote(false);
+
+                  setIsEditorOpen(true);
 
                   setNotesRefreshKey((current) => current + 1);
                 }}

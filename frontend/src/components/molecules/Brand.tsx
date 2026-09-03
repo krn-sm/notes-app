@@ -19,10 +19,12 @@ const Brand = ({
         src={logo}
         alt="Memoir"
         className="
-          h-12
-          w-12
+          h-10
+          w-10
           shrink-0
           object-contain
+          sm:h-12
+          sm:w-12
         "
       />
 

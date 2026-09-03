@@ -15,8 +15,11 @@ const ProfileDrawerHeader = ({ onClose }: ProfileDrawerHeaderProps) => {
         justify-between
         border-b
         border-line
-        px-8
-        py-7
+        px-5
+        py-5
+
+        sm:px-8
+        sm:py-7
       "
     >
       <h2

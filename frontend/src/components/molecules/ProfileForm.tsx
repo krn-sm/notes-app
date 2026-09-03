@@ -1,5 +1,6 @@
 import Button from "../atoms/Button";
 import FormField from "./FormField";
+import Spinner from "../atoms/Spinner"
 
 type ProfileFormProps = {
   name: string;
@@ -71,18 +72,29 @@ const ProfileForm = ({
         </p>
       )}
 
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={isLoading || !hasChanges || !name.trim()}
-        className="
-          h-12
-          w-full
-          text-[15px]
-        "
-      >
-        Save changes
-      </Button>
+<Button
+  type="submit"
+  variant="primary"
+  disabled={
+    isLoading ||
+    !hasChanges ||
+    !name.trim()
+  }
+  className="
+    h-12
+    w-full
+    text-[15px]
+  "
+>
+  {isLoading ? (
+    <>
+      <Spinner className="h-4 w-4" />
+      Saving...
+    </>
+  ) : (
+    "Save changes"
+  )}
+</Button>
     </form>
   );
 };

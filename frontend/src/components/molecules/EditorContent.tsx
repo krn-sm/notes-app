@@ -23,7 +23,15 @@ type EditorContentProps = {
 };
 
 const EditorContent = forwardRef<EditorContentHandle, EditorContentProps>(
-  ({ value, onChange, onFormatChange, textSizeClassName = "text-lg" }, ref) => {
+  (
+    {
+      value,
+      onChange,
+      onFormatChange,
+      textSizeClassName = "text-base sm:text-lg",
+    },
+    ref,
+  ) => {
     const editorRef = useRef<HTMLDivElement>(null);
 
     const updateFormatState = () => {
@@ -137,32 +145,46 @@ const EditorContent = forwardRef<EditorContentHandle, EditorContentProps>(
         onClick={handleSelectionChange}
         data-placeholder="Start writing..."
         className={`
-    h-full
-    min-h-0
-    w-full
-    overflow-y-auto
-    whitespace-pre-wrap
-    pr-4
-    font-body
-    ${textSizeClassName}
-    leading-[2]
-    text-ink
-    outline-none
+          h-full
+          min-h-0
+          w-full
+          min-w-0
+          overflow-y-auto
+          overflow-x-hidden
+          whitespace-pre-wrap
+          pr-2
 
-    empty:before
-    empty:before:content-[attr(data-placeholder)]
-    empty:before:text-ink-muted
+          sm:pr-4
 
-    [&_ul]:my-4
-    [&_ul]:list-disc
-    [&_ul]:pl-6
+          font-body
+          ${textSizeClassName}
 
-    [&_ol]:my-4
-    [&_ol]:list-decimal
-    [&_ol]:pl-6
+          leading-[1.8]
+          sm:leading-[2]
 
-    [&_input[type=checkbox]]:cursor-pointer
-  `}
+          text-ink
+          outline-none
+
+          empty:before
+          empty:before:content-[attr(data-placeholder)]
+          empty:before:text-ink-muted
+
+          [&_ul]:my-3
+          [&_ul]:list-disc
+          [&_ul]:pl-5
+
+          sm:[&_ul]:my-4
+          sm:[&_ul]:pl-6
+
+          [&_ol]:my-3
+          [&_ol]:list-decimal
+          [&_ol]:pl-5
+
+          sm:[&_ol]:my-4
+          sm:[&_ol]:pl-6
+
+          [&_input[type=checkbox]]:cursor-pointer
+        `}
       />
     );
   },

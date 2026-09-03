@@ -43,6 +43,7 @@ const Toast = ({ message, variant, isVisible, onClose }: ToastProps) => {
         right-6
         bottom-6
         z-[100]
+        hidden
         flex
         items-center
         gap-3
@@ -55,6 +56,7 @@ const Toast = ({ message, variant, isVisible, onClose }: ToastProps) => {
         shadow-[0_8px_30px_rgba(0,0,0,0.15)]
         transition-all
         duration-300
+        sm:flex
 
         ${
           isVisible

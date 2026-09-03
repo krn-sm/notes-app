@@ -5,7 +5,7 @@ const AuthHero = () => {
     <section
       className="
         flex
-        min-h-[380px]
+        min-h-[340px]
         flex-col
         bg-leather
         px-6
@@ -23,7 +23,21 @@ const AuthHero = () => {
       <Brand />
 
       {/* Hero Content */}
-      <div className="flex flex-1 flex-col justify-center py-14 lg:py-0">
+
+      <div
+        className="
+          flex
+          flex-1
+          flex-col
+          justify-center
+
+          py-10
+
+          sm:py-14
+
+          lg:py-0
+        "
+      >
         <p
           className="
             font-body
@@ -34,7 +48,7 @@ const AuthHero = () => {
             text-gold
 
             sm:text-[11px]
-            
+
             lg:text-[12px]
             lg:tracking-[0.25em]
           "
@@ -82,6 +96,7 @@ const AuthHero = () => {
       </div>
 
       {/* Quote */}
+
       <div
         className="
           hidden

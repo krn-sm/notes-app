@@ -36,11 +36,13 @@ const TagsDrawer = ({
 
   const handleStartEditing = (tag: TagWithCount) => {
     setEditingTagId(tag.id);
+
     setEditingName(tag.name);
   };
 
   const handleCancelEditing = () => {
     setEditingTagId(null);
+
     setEditingName("");
   };
 
@@ -68,6 +70,8 @@ const TagsDrawer = ({
       );
 
       handleCancelEditing();
+
+      showToast("Tag updated successfully", "success");
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : "Failed to update tag",
@@ -77,12 +81,20 @@ const TagsDrawer = ({
   };
 
   const handleDeleteTag = async (tagId: number) => {
+    const tag = tags.find((item) => item.id === tagId);
+
+    if (!tag || tag.note_count !== 0) {
+      return;
+    }
+
     try {
       await deleteTag(tagId);
 
       onTagsChange((currentTags) =>
-        currentTags.filter((tag) => tag.id !== tagId),
+        currentTags.filter((item) => item.id !== tagId),
       );
+
+      showToast("Tag deleted successfully", "success");
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : "Failed to delete tag",
@@ -92,328 +104,349 @@ const TagsDrawer = ({
   };
 
   return (
-    <>
-      <Drawer isOpen={isOpen} onClose={onClose}>
-        {/* Header */}
+    <Drawer isOpen={isOpen} onClose={onClose}>
+      {/* Header */}
 
-        <header
+      <header
+        className="
+          flex
+          shrink-0
+          items-center
+          justify-between
+          border-b
+          border-line
+          px-4
+          py-5
+
+          sm:px-7
+          sm:py-6
+        "
+      >
+        <div
           className="
             flex
-            shrink-0
+            min-w-0
             items-center
-            justify-between
-            border-b
-            border-line
-            px-7
-            py-6
+            gap-3
           "
         >
           <div
             className="
               flex
-              items-center
-              gap-3
-            "
-          >
-            <div
-              className="
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-xl
-                bg-gold/10
-                text-gold
-              "
-            >
-              <Tag size={20} />
-            </div>
-
-            <div>
-              <h2
-                className="
-                  font-display
-                  text-xl
-                  text-ink
-                "
-              >
-                Tags
-              </h2>
-
-              <p
-                className="
-                  mt-1
-                  font-body
-                  text-sm
-                  text-ink-muted
-                "
-              >
-                Manage your tags
-              </p>
-            </div>
-          </div>
-
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            aria-label="Close tags drawer"
-            className="
               h-10
               w-10
-              !p-0
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-gold/10
+              text-gold
             "
           >
-            <X size={20} />
-          </Button>
-        </header>
+            <Tag size={20} />
+          </div>
 
-        {/* Tags List */}
-
-        <div
-          className="
-            min-h-0
-            flex-1
-            overflow-y-auto
-            px-5
-            py-5
-          "
-        >
-          {tags.length === 0 ? (
-            <div
+          <div className="min-w-0">
+            <h2
               className="
-                flex
-                flex-col
-                items-center
-                justify-center
-                py-20
-                text-center
+                truncate
+                font-display
+                text-xl
+                text-ink
               "
             >
-              <Tag
-                size={40}
-                strokeWidth={1.5}
-                className="
-                  text-ink-muted/40
-                "
-              />
+              Tags
+            </h2>
 
-              <p
-                className="
-                  mt-4
-                  font-body
-                  text-sm
-                  text-ink-muted
-                "
-              >
-                No tags yet.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {tags.map((tag) => {
-                const isEditing = editingTagId === tag.id;
-
-                return (
-                  <div
-                    key={tag.id}
-                    className="
-                      group
-                      flex
-                      min-h-14
-                      items-center
-                      gap-3
-                      rounded-xl
-                      border
-                      border-line
-                      bg-paper
-                      px-4
-                      py-3
-                      transition
-                      hover:bg-paper-dark
-                    "
-                  >
-                    <Tag
-                      size={18}
-                      strokeWidth={1.7}
-                      className="
-                        shrink-0
-                        text-gold
-                      "
-                    />
-
-                    <div className="min-w-0 flex-1">
-                      {isEditing ? (
-                        <input
-                          autoFocus
-                          value={editingName}
-                          onChange={(event) =>
-                            setEditingName(event.target.value)
-                          }
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              handleSaveTag(tag.id);
-                            }
-
-                            if (event.key === "Escape") {
-                              handleCancelEditing();
-                            }
-                          }}
-                          className="
-                            w-full
-                            rounded-lg
-                            border
-                            border-gold
-                            bg-paper
-                            px-3
-                            py-1.5
-                            font-body
-                            text-sm
-                            text-ink
-                            outline-none
-                          "
-                        />
-                      ) : (
-                        <p
-                          className="
-                            truncate
-                            font-body
-                            text-[15px]
-                            text-ink
-                          "
-                        >
-                          {tag.name}
-                        </p>
-                      )}
-                    </div>
-
-                    {!isEditing && (
-                      <span
-                        className="
-                          shrink-0
-                          rounded-full
-                          bg-gold/10
-                          px-2.5
-                          py-1
-                          font-body
-                          text-xs
-                          text-gold-dark
-                        "
-                      >
-                        {tag.note_count}
-                      </span>
-                    )}
-
-                    <div
-                      className="
-                        flex
-                        shrink-0
-                        items-center
-                        gap-1
-                      "
-                    >
-                      {isEditing ? (
-                        <>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleSaveTag(tag.id)}
-                            className="
-                              h-8
-                              w-8
-                              !p-0
-                              text-gold
-                            "
-                            aria-label="Save tag"
-                          >
-                            <Check size={17} />
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            onClick={handleCancelEditing}
-                            className="
-                              h-8
-                              w-8
-                              !p-0
-                            "
-                            aria-label="Cancel editing"
-                          >
-                            <X size={17} />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          {tag.note_count > 0 && (
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleStartEditing(tag)}
-                              className="
-                                h-8
-                                w-8
-                                !p-0
-                                opacity-0
-                                transition-opacity
-                                group-hover:opacity-100
-                              "
-                              aria-label={`Rename ${tag.name}`}
-                            >
-                              <Pencil size={16} />
-                            </Button>
-                          )}
-
-                          {tag.note_count === 0 && (
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleDeleteTag(tag.id)}
-                              className="
-                                h-8
-                                w-8
-                                !p-0
-                                text-red-400
-                                opacity-0
-                                transition-opacity
-                                hover:!bg-red-50
-                                hover:!text-red-500
-                                group-hover:opacity-100
-                              "
-                              aria-label={`Delete ${tag.name}`}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+            <p
+              className="
+                mt-1
+                font-body
+                text-sm
+                text-ink-muted
+              "
+            >
+              Manage your tags
+            </p>
+          </div>
         </div>
 
-        {/* Footer */}
-
-        <footer
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          aria-label="Close tags drawer"
           className="
+            h-10
+            w-10
             shrink-0
-            border-t
-            border-line
-            px-7
-            py-4
+            !p-0
           "
         >
-          <p
+          <X size={20} />
+        </Button>
+      </header>
+
+      {/* Tags List */}
+
+      <div
+        className="
+          min-h-0
+          flex-1
+          overflow-y-auto
+          px-4
+          py-4
+
+          sm:px-5
+          sm:py-5
+        "
+      >
+        {tags.length === 0 ? (
+          <div
             className="
-              font-body
-              text-xs
-              text-ink-muted
+              flex
+              flex-col
+              items-center
+              justify-center
+              py-20
+              text-center
             "
           >
-            Tags with notes cannot be deleted.
-          </p>
-        </footer>
-      </Drawer>
-    </>
+            <Tag
+              size={40}
+              strokeWidth={1.5}
+              className="
+                text-ink-muted/40
+              "
+            />
+
+            <p
+              className="
+                mt-4
+                font-body
+                text-sm
+                text-ink-muted
+              "
+            >
+              No tags yet.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {tags.map((tag) => {
+              const isEditing = editingTagId === tag.id;
+
+              return (
+                <div
+                  key={tag.id}
+                  className="
+                    group
+                    flex
+                    min-h-14
+                    items-center
+                    gap-2
+                    rounded-xl
+                    border
+                    border-line
+                    bg-paper
+                    px-3
+                    py-3
+                    transition
+                    hover:bg-paper-dark
+
+                    sm:gap-3
+                    sm:px-4
+                  "
+                >
+                  {/* Tag Icon */}
+
+                  <Tag
+                    size={18}
+                    strokeWidth={1.7}
+                    className="
+                      shrink-0
+                      text-gold
+                    "
+                  />
+
+                  {/* Tag Name */}
+
+                  <div className="min-w-0 flex-1">
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        value={editingName}
+                        onChange={(event) => setEditingName(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            handleSaveTag(tag.id);
+                          }
+
+                          if (event.key === "Escape") {
+                            handleCancelEditing();
+                          }
+                        }}
+                        className="
+                          w-full
+                          rounded-lg
+                          border
+                          border-gold
+                          bg-paper
+                          px-3
+                          py-1.5
+                          font-body
+                          text-sm
+                          text-ink
+                          outline-none
+                        "
+                      />
+                    ) : (
+                      <p
+                        className="
+                          truncate
+                          font-body
+                          text-[15px]
+                          text-ink
+                        "
+                      >
+                        {tag.name}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Note Count */}
+
+                  {!isEditing && (
+                    <span
+                      className="
+                        shrink-0
+                        rounded-full
+                        bg-gold/10
+                        px-2.5
+                        py-1
+                        font-body
+                        text-xs
+                        text-gold-dark
+                      "
+                    >
+                      {tag.note_count}
+                    </span>
+                  )}
+
+                  {/* Actions */}
+
+                  <div
+                    className="
+                      flex
+                      shrink-0
+                      items-center
+                      gap-1
+
+                      opacity-100
+                      transition-opacity
+
+                      sm:opacity-0
+                      sm:group-hover:opacity-100
+                    "
+                  >
+                    {isEditing ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSaveTag(tag.id)}
+                          className="
+                            h-8
+                            w-8
+                            !p-0
+                            text-gold
+                          "
+                          aria-label="Save tag"
+                        >
+                          <Check size={17} />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          onClick={handleCancelEditing}
+                          className="
+                            h-8
+                            w-8
+                            !p-0
+                          "
+                          aria-label="Cancel editing"
+                        >
+                          <X size={17} />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        {/* Rename */}
+
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleStartEditing(tag)}
+                          className="
+                            h-8
+                            w-8
+                            !p-0
+                          "
+                          aria-label={`Rename ${tag.name}`}
+                        >
+                          <Pencil size={16} />
+                        </Button>
+
+                        {/* Delete only if there are no notes */}
+
+                        {tag.note_count === 0 && (
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleDeleteTag(tag.id)}
+                            className="
+                              h-8
+                              w-8
+                              !p-0
+                              text-red-400
+                              hover:!bg-red-50
+                              hover:!text-red-500
+                            "
+                            aria-label={`Delete ${tag.name}`}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+
+      <footer
+        className="
+          shrink-0
+          border-t
+          border-line
+          px-4
+          py-4
+
+          sm:px-7
+        "
+      >
+        <p
+          className="
+            font-body
+            text-xs
+            text-ink-muted
+          "
+        >
+          Tags with notes cannot be deleted.
+        </p>
+      </footer>
+    </Drawer>
   );
 };
 

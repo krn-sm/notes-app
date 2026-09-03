@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import Button from "../atoms/Button";
@@ -9,35 +10,45 @@ type ModalProps = {
   onClose: () => void;
 };
 
-const Modal = ({ isOpen, title, children, onClose }: ModalProps) => {
+const Modal = ({
+  isOpen,
+  title,
+  children,
+  onClose,
+}: ModalProps) => {
   if (!isOpen) {
     return null;
   }
 
-  return (
+  return createPortal(
     <>
       {/* Overlay */}
+
       <div
         onClick={onClose}
         className="
           fixed
           inset-0
-          z-[60]
+          z-[100]
           bg-black/40
           backdrop-blur-[2px]
         "
       />
 
       {/* Modal */}
+
       <div
         className="
           fixed
           inset-0
-          z-[70]
+          z-[110]
           flex
           items-center
           justify-center
           px-6
+
+          max-md:items-end
+          max-md:px-0
         "
       >
         <div
@@ -49,9 +60,13 @@ const Modal = ({ isOpen, title, children, onClose }: ModalProps) => {
             border-line
             bg-paper
             shadow-[0_20px_60px_rgba(0,0,0,0.2)]
+
+            max-md:max-w-none
+            max-md:rounded-b-none
           "
         >
           {/* Header */}
+
           <div
             className="
               flex
@@ -61,6 +76,8 @@ const Modal = ({ isOpen, title, children, onClose }: ModalProps) => {
               border-line
               px-7
               py-5
+
+              max-md:px-6
             "
           >
             <h2
@@ -85,15 +102,30 @@ const Modal = ({ isOpen, title, children, onClose }: ModalProps) => {
                 !p-0
               "
             >
-              <X size={18} strokeWidth={1.8} />
+              <X
+                size={18}
+                strokeWidth={1.8}
+              />
             </Button>
           </div>
 
           {/* Content */}
-          <div className="px-7 py-6">{children}</div>
+
+          <div
+            className="
+              px-7
+              py-6
+
+              max-md:px-6
+              max-md:py-5
+            "
+          >
+            {children}
+          </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 };
 

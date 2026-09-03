@@ -30,18 +30,17 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
   const [collapsed, setCollapsed] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
   const { tags, setTags, isLoading } = useTags();
 
   /*
-   * Collapse sidebar on mobile
-   * when the screen size changes.
+   * Detect mobile screen size.
    */
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setCollapsed(true);
-      }
+      setIsMobile(window.innerWidth < 768);
     };
 
     handleResize();
@@ -52,6 +51,15 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  /*
+   * On mobile, sidebar is ALWAYS collapsed.
+   *
+   * On tablet and desktop,
+   * user can control collapsed state.
+   */
+
+  const isCollapsed = isMobile || collapsed;
 
   const sortedTags = [...tags].sort((a, b) => b.note_count - a.note_count);
 
@@ -82,46 +90,46 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
           ease-in-out
 
           ${
-            collapsed
+            isCollapsed
               ? "w-16 px-2 sm:w-[88px] sm:px-4"
               : "w-[260px] px-4 sm:w-[300px] sm:px-5"
           }
         `}
       >
-        {/* Collapse Button */}
+        {/* Collapse Button — Tablet/Desktop only */}
 
-        <Button
-          variant="secondary"
-          onClick={() => setCollapsed((prev) => !prev)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="
-            absolute
-            top-1/2
-            -right-[16px]
-            z-50
-            h-8
-            w-8
-            -translate-y-1/2
-            !rounded-xl
-            !p-0
-            border-[2px]
-            border-solid
-            border-leather
-            shadow-[0_3px_10px_rgba(0,0,0,0.35)]
-            sm:h-9
-            sm:w-9
-          "
-        >
-          {collapsed ? (
-            <ChevronRight size={16} strokeWidth={1.8} />
-          ) : (
-            <ChevronLeft size={17} strokeWidth={1.8} />
-          )}
-        </Button>
+        {!isMobile && (
+          <Button
+            variant="secondary"
+            onClick={() => setCollapsed((prev) => !prev)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="
+              absolute
+              top-1/2
+              -right-[16px]
+              z-50
+              h-9
+              w-9
+              -translate-y-1/2
+              !rounded-xl
+              !p-0
+              border-[2px]
+              border-solid
+              border-leather
+              shadow-[0_3px_10px_rgba(0,0,0,0.35)]
+            "
+          >
+            {collapsed ? (
+              <ChevronRight size={16} strokeWidth={1.8} />
+            ) : (
+              <ChevronLeft size={17} strokeWidth={1.8} />
+            )}
+          </Button>
+        )}
 
         {/* Brand */}
 
-        <Brand collapsed={collapsed} />
+        <Brand collapsed={isCollapsed} />
 
         {/* New Note */}
 
@@ -131,7 +139,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
             shrink-0
             sm:mt-10
 
-            ${collapsed ? "" : "px-1"}
+            ${isCollapsed ? "" : "px-1"}
           `}
         >
           <Button
@@ -149,7 +157,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
           >
             <Plus size={20} strokeWidth={1.8} />
 
-            {!collapsed && <span>New Note</span>}
+            {!isCollapsed && <span>New Note</span>}
           </Button>
         </div>
 
@@ -166,7 +174,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
           <NavItem
             to="/home"
             end
-            collapsed={collapsed}
+            collapsed={isCollapsed}
             icon={<ListTodo size={19} strokeWidth={1.7} />}
           >
             All Notes
@@ -174,7 +182,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
           <NavItem
             to="/home/favorites"
-            collapsed={collapsed}
+            collapsed={isCollapsed}
             icon={<Star size={19} strokeWidth={1.7} />}
           >
             Favorites
@@ -182,7 +190,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
 
           <NavItem
             to="/home/trash"
-            collapsed={collapsed}
+            collapsed={isCollapsed}
             icon={<Trash2 size={19} strokeWidth={1.7} />}
           >
             Trash
@@ -200,7 +208,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
             sm:mt-10
           "
         >
-          {collapsed ? (
+          {isCollapsed ? (
             <Button
               variant="ghost"
               onClick={handleOpenTagsDrawer}

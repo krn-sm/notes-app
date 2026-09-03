@@ -1,19 +1,21 @@
-import Input from "../atoms/Input"
+import Input from "../atoms/Input";
 
 type FormFieldProps = {
-  label: string
-  error?: string
-} & React.InputHTMLAttributes<HTMLInputElement>
+  label: string;
+  error?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 const FormField = ({
   label,
   error,
+  id,
   className = "",
   ...props
 }: FormFieldProps) => {
   return (
     <div className="flex flex-col gap-1">
       <label
+        htmlFor={id}
         className="
           font-body
           text-sm
@@ -24,10 +26,7 @@ const FormField = ({
         {label}
       </label>
 
-      <Input
-        className={className}
-        {...props}
-      />
+      <Input id={id} className={className} {...props} />
 
       {error && (
         <p
@@ -41,7 +40,7 @@ const FormField = ({
         </p>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default FormField
+export default FormField;

@@ -1,39 +1,27 @@
 import { Tag } from "lucide-react";
-
 import { NavLink } from "react-router-dom";
 
 type CategoryNavItemProps = {
   name: string;
   count: number;
   path: string;
-  collapsed?: boolean;
 };
 
-const CategoryNavItem = ({
-  name,
-  count,
-  path,
-  collapsed = false,
-}: CategoryNavItemProps) => {
+const CategoryNavItem = ({ name, count, path }: CategoryNavItemProps) => {
   return (
     <NavLink
       to={path}
-      title={collapsed ? name : undefined}
       className={({ isActive }) =>
         `
           flex
           h-11
           min-w-0
           items-center
+          justify-between
           rounded-xl
+          px-3
           transition-all
           duration-200
-
-          ${
-            collapsed
-              ? "justify-center"
-              : "justify-between px-3"
-          }
 
           ${
             isActive
@@ -44,16 +32,12 @@ const CategoryNavItem = ({
       }
     >
       <div
-        className={`
+        className="
           flex
           min-w-0
           items-center
-          ${
-            collapsed
-              ? "justify-center"
-              : "gap-4"
-          }
-        `}
+          gap-4
+        "
       >
         <Tag
           size={20}
@@ -64,31 +48,27 @@ const CategoryNavItem = ({
           "
         />
 
-        {!collapsed && (
-          <span
-            className="
-              truncate
-              font-body
-              text-[15px]
-            "
-          >
-            {name}
-          </span>
-        )}
-      </div>
-
-      {!collapsed && (
         <span
           className="
-            shrink-0
+            truncate
             font-body
-            text-sm
-            text-[#d8b778]
+            text-[15px]
           "
         >
-          {count}
+          {name}
         </span>
-      )}
+      </div>
+
+      <span
+        className="
+          shrink-0
+          font-body
+          text-sm
+          text-[#d8b778]
+        "
+      >
+        {count}
+      </span>
     </NavLink>
   );
 };

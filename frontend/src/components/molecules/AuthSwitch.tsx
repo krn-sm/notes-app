@@ -1,12 +1,16 @@
-import Button from "../atoms/Button";
+import Button from "../atoms/Button"
 
 type AuthSwitchProps = {
-  text: string;
-  action: string;
-  onClick: () => void;
-};
+  text: string
+  action: string
+  onClick: () => void
+}
 
-const AuthSwitch = ({ text, action, onClick }: AuthSwitchProps) => {
+const AuthSwitch = ({
+  text,
+  action,
+  onClick,
+}: AuthSwitchProps) => {
   return (
     <div
       className="
@@ -37,7 +41,7 @@ const AuthSwitch = ({ text, action, onClick }: AuthSwitchProps) => {
         {action}
       </Button>
     </div>
-  );
-};
+  )
+}
 
-export default AuthSwitch;
+export default AuthSwitch

@@ -31,9 +31,12 @@ const ProfileInfo = ({ name, email }: ProfileInfoProps) => {
       <p
         className="
           mt-1
+          break-all
+          text-center
           font-body
           text-sm
           text-ink-muted
+          
         "
       >
         {email}

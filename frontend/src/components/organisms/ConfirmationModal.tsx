@@ -1,17 +1,17 @@
-import Button from "../atoms/Button"
-import Modal from "../molecules/Modal"
+import Button from "../atoms/Button";
+import Modal from "../molecules/Modal";
 
 type ConfirmationModalProps = {
-  isOpen: boolean
-  title: string
-  description: string
-  cancelLabel?: string
-  confirmLabel: string
-  onCancel: () => void
-  onConfirm: () => void
-  isLoading?: boolean
-  danger?: boolean
-}
+  isOpen: boolean;
+  title: string;
+  description: string;
+  cancelLabel?: string;
+  confirmLabel: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+  isLoading?: boolean;
+  danger?: boolean;
+};
 
 const ConfirmationModal = ({
   isOpen,
@@ -25,11 +25,7 @@ const ConfirmationModal = ({
   danger = false,
 }: ConfirmationModalProps) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      title={title}
-      onClose={onCancel}
-    >
+    <Modal isOpen={isOpen} title={title} onClose={onCancel}>
       <p
         className="
           font-body
@@ -43,16 +39,26 @@ const ConfirmationModal = ({
 
       <div
         className="
-          mt-7
+          mt-6
           flex
-          justify-end
+          flex-col
           gap-3
+
+          sm:mt-7
+          sm:flex-row
+          sm:justify-end
         "
       >
         <Button
           variant="secondary"
           onClick={onCancel}
           disabled={isLoading}
+          className="
+            h-11
+            w-full
+
+            sm:w-auto
+          "
         >
           {cancelLabel}
         </Button>
@@ -61,19 +67,20 @@ const ConfirmationModal = ({
           variant={danger ? "ghost" : "primary"}
           onClick={onConfirm}
           disabled={isLoading}
-          className={
-            danger
-              ? "text-red-600 hover:!bg-red-50 border-[2px]"
-              : ""
-          }
+          className={`
+            h-11
+            w-full
+
+            sm:w-auto
+
+            ${danger ? "border-[2px] text-red-600 hover:!bg-red-50" : ""}
+          `}
         >
-          {isLoading
-            ? "Please wait..."
-            : confirmLabel}
+          {isLoading ? "Please wait..." : confirmLabel}
         </Button>
       </div>
     </Modal>
-  )
-}
+  );
+};
 
-export default ConfirmationModal
+export default ConfirmationModal;

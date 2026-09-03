@@ -1,12 +1,12 @@
-import { NavLink } from "react-router-dom"
+import { NavLink } from "react-router-dom";
 
 type NavItemProps = {
-  to: string
-  children: React.ReactNode
-  icon?: React.ReactNode
-  end?: boolean
-  collapsed?: boolean
-}
+  to: string;
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+  end?: boolean;
+  collapsed?: boolean;
+};
 
 const NavItem = ({
   to,
@@ -67,13 +67,9 @@ const NavItem = ({
         </span>
       )}
 
-      {!collapsed && (
-        <span className="whitespace-nowrap">
-          {children}
-        </span>
-      )}
+      {!collapsed && <span className="whitespace-nowrap">{children}</span>}
     </NavLink>
-  )
-}
+  );
+};
 
-export default NavItem
+export default NavItem;

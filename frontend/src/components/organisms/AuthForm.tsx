@@ -6,16 +6,15 @@ import Input from "../atoms/Input";
 import Spinner from "../atoms/Spinner";
 
 import AuthSwitch from "../molecules/AuthSwitch";
-import Brand from "../molecules/Brand";
 
-import {
-  login,
-  register,
-} from "../../services/authService";
+import { Eye, EyeOff } from "lucide-react";
+
+import { login, register } from "../../services/authService";
 
 type AuthMode = "login" | "register";
 
 const AuthForm = () => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<AuthMode>("register");
@@ -27,9 +26,7 @@ const AuthForm = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
@@ -70,11 +67,7 @@ const AuthForm = () => {
     setError("");
     setPassword("");
 
-    setMode((currentMode) =>
-      currentMode === "login"
-        ? "register"
-        : "login",
-    );
+    setMode((currentMode) => (currentMode === "login" ? "register" : "login"));
   };
 
   return (
@@ -96,11 +89,6 @@ const AuthForm = () => {
       "
     >
       <div className="w-full max-w-md">
-
-        <div className="mb-14 lg:hidden">
-          <Brand />
-        </div>
-
         {/* Heading */}
         <div>
           <h1
@@ -113,9 +101,7 @@ const AuthForm = () => {
               sm:text-4xl
             "
           >
-            {mode === "login"
-              ? "Welcome back."
-              : "Start your memoir."}
+            {mode === "login" ? "Welcome back." : "Start your memoir."}
           </h1>
 
           <p
@@ -161,9 +147,7 @@ const AuthForm = () => {
                 type="text"
                 placeholder="Your name"
                 value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
+                onChange={(event) => setName(event.target.value)}
                 required
               />
             </div>
@@ -190,40 +174,75 @@ const AuthForm = () => {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </div>
 
           {/* Password */}
+          {/* Password */}
+
           <div>
             <label
               htmlFor="password"
               className="
-                mb-2
-                block
-                font-body
-                text-sm
-                font-medium
-                text-ink
-              "
+      mb-2
+      block
+      font-body
+      text-sm
+      font-medium
+      text-ink
+    "
             >
               Password
             </label>
 
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              minLength={8}
-              required
-            />
+            <div
+              className="
+      relative
+      flex
+      items-center
+    "
+            >
+              <Input
+                id="password"
+                type={isPasswordVisible ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                minLength={8}
+                required
+                className="
+        pr-12
+      "
+              />
+
+              <button
+                type="button"
+                onClick={() => setIsPasswordVisible((current) => !current)}
+                className="
+        absolute
+        right-0
+        flex
+        h-full
+        w-12
+        items-center
+        justify-center
+        text-ink-muted
+        transition-colors
+        hover:text-ink
+      "
+                aria-label={
+                  isPasswordVisible ? "Hide password" : "Show password"
+                }
+              >
+                {isPasswordVisible ? (
+                  <EyeOff size={19} strokeWidth={1.8} />
+                ) : (
+                  <Eye size={19} strokeWidth={1.8} />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Error */}
@@ -271,15 +290,9 @@ const AuthForm = () => {
         <div className="mt-8">
           <AuthSwitch
             text={
-              mode === "login"
-                ? "New to Memoir?"
-                : "Already have an account?"
+              mode === "login" ? "New to Memoir?" : "Already have an account?"
             }
-            action={
-              mode === "login"
-                ? "Sign up"
-                : "Log in"
-            }
+            action={mode === "login" ? "Sign up" : "Log in"}
             onClick={switchMode}
           />
         </div>

@@ -36,19 +36,20 @@ const EditorTags = ({
     <div
       className="
         flex
+        min-w-0
         items-center
         gap-2
         overflow-x-auto
         border-t
         border-line
-        pt-1
+        pt-2
       "
     >
       {tags.map((tag) => (
         <Badge
           key={tag.id}
           className="
-          shrink-0
+            shrink-0
             gap-2
             pr-2
           "
@@ -74,7 +75,6 @@ const EditorTags = ({
               text-ink-muted
               transition
               hover:text-ink
-              border
             "
             aria-label={`Remove ${tag.name}`}
           >
@@ -83,7 +83,13 @@ const EditorTags = ({
         </Badge>
       ))}
 
-      <div className="min-w-[140px] shrink-0">
+      <div
+        className="
+          min-w-[120px]
+          shrink-0
+          sm:min-w-[140px]
+        "
+      >
         <TagInput
           ref={inputRef}
           value={value}

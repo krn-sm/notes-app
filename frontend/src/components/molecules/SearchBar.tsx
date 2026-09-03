@@ -1,16 +1,13 @@
-import { Search } from "lucide-react"
+import { Search } from "lucide-react";
 
-import Input from "../atoms/Input"
+import Input from "../atoms/Input";
 
 type SearchBarProps = {
-  value: string
-  onChange: (value: string) => void
-}
+  value: string;
+  onChange: (value: string) => void;
+};
 
-const SearchBar = ({
-  value,
-  onChange,
-}: SearchBarProps) => {
+const SearchBar = ({ value, onChange }: SearchBarProps) => {
   return (
     <div
       className="
@@ -37,9 +34,7 @@ const SearchBar = ({
         type="search"
         placeholder="Search title, tags or content"
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
+        onChange={(event) => onChange(event.target.value)}
         className="
           h-full
           min-w-0
@@ -49,7 +44,7 @@ const SearchBar = ({
         "
       />
     </div>
-  )
-}
+  );
+};
 
-export default SearchBar
+export default SearchBar;

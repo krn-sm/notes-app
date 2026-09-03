@@ -1,42 +1,47 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import {
-  Outlet,
-} from "react-router-dom"
+import { Outlet } from "react-router-dom";
 
-import { useAuth } from "../contexts/AuthContext"
+import { useAuth } from "../contexts/AuthContext";
 
-import ProfileDrawer from "../components/organisms/ProfileDrawer"
-import Sidebar from "../components/organisms/SideBar"
+import ProfileDrawer from "../components/organisms/ProfileDrawer";
+import Sidebar from "../components/organisms/SideBar";
 
 const AppLayout = () => {
   const {
     user,
     setUser,
-  } = useAuth()
+  } = useAuth();
 
   const [
     isProfileOpen,
     setIsProfileOpen,
-  ] = useState(false)
+  ] = useState(false);
 
   const [
     isCreatingNote,
     setIsCreatingNote,
-  ] = useState(false)
+  ] = useState(false);
+
+  const [
+    isEditorOpen,
+    setIsEditorOpen,
+  ] = useState(false);
 
   const [
     newNoteKey,
     setNewNoteKey,
-  ] = useState(0)
+  ] = useState(0);
 
   const handleNewNote = () => {
-    setIsCreatingNote(true)
+    setIsCreatingNote(true);
+
+    setIsEditorOpen(true);
 
     setNewNoteKey(
       (current) => current + 1,
-    )
-  }
+    );
+  };
 
   return (
     <div
@@ -50,12 +55,18 @@ const AppLayout = () => {
       {/* Sidebar */}
 
       <div
-        className="
+        className={`
           relative
           z-30
           shrink-0
           overflow-visible
-        "
+
+          ${
+            isEditorOpen
+              ? "hidden md:block"
+              : "block"
+          }
+        `}
       >
         <Sidebar
           onNewNote={handleNewNote}
@@ -84,6 +95,10 @@ const AppLayout = () => {
 
             setIsCreatingNote,
 
+            isEditorOpen,
+
+            setIsEditorOpen,
+
             newNoteKey,
           }}
         />
@@ -103,7 +118,7 @@ const AppLayout = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default AppLayout
+export default AppLayout;

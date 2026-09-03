@@ -26,104 +26,133 @@ const AppHeader = ({
   return (
     <header
       className="
-        flex
         shrink-0
-        flex-col
-        gap-4
         border-b
         border-line
         bg-paper
-        px-5
-        py-5
+        px-4
+        py-4
 
-        md:h-[112px]
-        md:flex-row
-        md:items-center
-        md:justify-between
-        md:px-7
-        md:py-0
+        sm:px-6
+        sm:py-5
+
+        lg:flex
+        lg:h-[112px]
+        lg:items-center
+        lg:justify-between
+        lg:px-7
+        lg:py-0
       "
     >
-      {/* Greeting */}
+      {/* Top Row */}
 
-      <div className="shrink-0">
-        <h1
+      <div
+        className="
+          flex
+          items-center
+          justify-between
+          gap-4
+
+          lg:contents
+        "
+      >
+        {/* Greeting */}
+
+        <div className="min-w-0 shrink">
+          <h1
+            className="
+              truncate
+              font-display
+              text-[22px]
+              font-medium
+              text-ink
+
+              sm:text-2xl
+
+              lg:text-[30px]
+            "
+          >
+            Hello, {user?.name ?? "there"}
+          </h1>
+
+          <p
+            className="
+              mt-1
+              font-body
+              text-xs
+              text-ink-muted
+
+              sm:text-sm
+            "
+          >
+            You have {noteCount} note
+            {noteCount !== 1 ? "s" : ""}
+          </p>
+        </div>
+
+        {/* Profile */}
+
+        <div
           className="
-            font-display
-            text-2xl
-            font-medium
-            text-ink
+            flex
+            shrink-0
+            items-center
 
-            md:text-[30px]
+            lg:order-3
           "
         >
-          Hello, {user?.name ?? "there"}
-        </h1>
+          {user && (
+            <Button
+              variant="ghost"
+              onClick={onProfileClick}
+              className="
+                !h-10
+                !w-10
+                !rounded-full
+                !p-0
 
-        <p
-          className="
-            mt-1
-            font-body
-            text-sm
-            text-ink-muted
-          "
-        >
-          You have {noteCount} note
-          {noteCount !== 1 ? "s" : ""}
-        </p>
+                sm:h-auto
+                sm:w-auto
+                sm:gap-3
+                sm:!rounded-xl
+                sm:!px-2
+                sm:!py-1.5
+              "
+              aria-label="Open profile"
+            >
+              <Avatar name={user.name} />
+
+              <span
+                className="
+                  hidden
+                  font-body
+                  text-sm
+                  font-medium
+                  text-ink
+
+                  sm:inline
+                "
+              >
+                {user.name}
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Search */}
 
       <div
         className="
+          mt-4
           w-full
 
-          md:max-w-[300px]
+          lg:order-2
+          lg:mt-0
+          lg:max-w-[320px]
         "
       >
-        <SearchBar
-          value={searchQuery}
-          onChange={onSearchChange}
-        />
-      </div>
-
-      {/* Profile */}
-
-      <div
-        className="
-          flex
-          shrink-0
-          items-center
-
-          md:justify-end
-        "
-      >
-        {user && (
-          <Button
-            variant="ghost"
-            onClick={onProfileClick}
-            className="
-              gap-3
-              !rounded-xl
-              !px-2
-              !py-1.5
-            "
-          >
-            <Avatar name={user.name} />
-
-            <span
-              className="
-                font-body
-                text-sm
-                font-medium
-                text-ink
-              "
-            >
-              {user.name}
-            </span>
-          </Button>
-        )}
+        <SearchBar value={searchQuery} onChange={onSearchChange} />
       </div>
     </header>
   );

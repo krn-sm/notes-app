@@ -15,7 +15,8 @@ const Input = ({
         outline-none
         placeholder:text-ink-muted
         focus-visible:ring-gold/50
-
+        focus-visible:ring-2
+        
         disabled:cursor-not-allowed
         disabled:text-ink-muted
         disabled:opacity-60

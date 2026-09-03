@@ -10,7 +10,8 @@ const ProfileDrawerFooter = ({ onLogout }: ProfileDrawerFooterProps) => {
       className="
         border-t
         border-line
-        p-6
+        p-5
+        sm:p-6
       "
     >
       <Button
