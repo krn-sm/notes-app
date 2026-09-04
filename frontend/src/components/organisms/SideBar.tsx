@@ -240,7 +240,7 @@ const Sidebar = ({ onNewNote }: SidebarProps) => {
                 <p
                   className="
                     font-body
-                    text-[11px]
+                    text-[15px]
                     font-medium
                     uppercase
                     tracking-[0.16em]

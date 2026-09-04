@@ -24,15 +24,10 @@ type NoteFilters = {
 
 type NoteListProps = {
   variant?: "grid" | "sidebar";
-
   selectedNoteId?: number | null;
-
   onNoteClick: (note: Note) => void;
-
   filters?: NoteFilters;
-
   searchQuery?: string;
-
   onNoteCountChange?: (count: number) => void;
 };
 
@@ -40,15 +35,11 @@ const NOTES_PER_PAGE = 8;
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-
   const now = new Date();
-
   const difference = now.getTime() - date.getTime();
 
   const minutes = Math.floor(difference / (1000 * 60));
-
   const hours = Math.floor(difference / (1000 * 60 * 60));
-
   const days = Math.floor(difference / (1000 * 60 * 60 * 24));
 
   if (minutes < 1) {
@@ -74,59 +65,40 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-
     year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
 };
 
 const NoteList = ({
   variant = "grid",
-
   selectedNoteId = null,
-
   onNoteClick,
-
   filters = {},
-
   searchQuery = "",
-
   onNoteCountChange,
 }: NoteListProps) => {
   const { showToast } = useToast();
-
   const { refreshTags } = useTags();
 
   const { favorite, deleted, tag_id } = filters;
 
   const [notes, setNotes] = useState<Note[]>([]);
-
   const [isLoading, setIsLoading] = useState(true);
-
   const [error, setError] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-
   const [totalPages, setTotalPages] = useState(1);
-
-  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
-
-  const [noteToRestore, setNoteToRestore] = useState<Note | null>(null);
-
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const [isRestoring, setIsRestoring] = useState(false);
 
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
-  /*
-   * Debounce search and
-   * return to page 1.
-   */
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [noteToRestore, setNoteToRestore] = useState<Note | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-
       setCurrentPage(1);
     }, 400);
 
@@ -135,39 +107,26 @@ const NoteList = ({
     };
   }, [searchQuery]);
 
-  /*
-   * Load notes.
-   */
-
   useEffect(() => {
     const loadNotes = async () => {
       try {
         setIsLoading(true);
-
         setError("");
 
         const response = await getNotes({
           favorite,
-
           deleted,
-
           tag_id,
-
           q: debouncedSearchQuery || undefined,
-
           page: currentPage,
-
           limit: NOTES_PER_PAGE,
         });
 
         setNotes(response.items);
-
         setTotalPages(response.total_pages);
-
         onNoteCountChange?.(response.total);
       } catch (error) {
         console.error(error);
-
         setError(
           error instanceof Error ? error.message : "Failed to load notes",
         );
@@ -185,11 +144,6 @@ const NoteList = ({
     currentPage,
     onNoteCountChange,
   ]);
-
-  /*
-   * Keep selected note first
-   * in sidebar mode.
-   */
 
   const sortedNotes = [...notes].sort((a, b) => {
     if (a.id === selectedNoteId) {
@@ -281,10 +235,6 @@ const NoteList = ({
       }
 
       await refreshTags();
-      /*
-       * Reload current page
-       * after deletion.
-       */
 
       const response = await getNotes({
         favorite,
@@ -299,9 +249,7 @@ const NoteList = ({
         setCurrentPage((page) => page - 1);
       } else {
         setNotes(response.items);
-
         setTotalPages(response.total_pages);
-
         onNoteCountChange?.(response.total);
       }
 
@@ -310,10 +258,8 @@ const NoteList = ({
         isPermanent ? "Note permanently deleted" : "Note moved to trash",
         "success",
       );
-      
     } catch (error) {
       console.error(error);
-
       showToast(
         error instanceof Error ? error.message : "Failed to delete note",
         "error",
@@ -333,6 +279,7 @@ const NoteList = ({
 
       await restoreNote(noteToRestore.id);
       await refreshTags();
+
       const response = await getNotes({
         favorite,
         deleted,
@@ -346,19 +293,14 @@ const NoteList = ({
         setCurrentPage((page) => page - 1);
       } else {
         setNotes(response.items);
-
         setTotalPages(response.total_pages);
-
         onNoteCountChange?.(response.total);
       }
 
       setNoteToRestore(null);
-
       showToast("Note restored successfully", "success");
-
     } catch (error) {
       console.error(error);
-
       showToast(
         error instanceof Error ? error.message : "Failed to restore note",
         "error",
@@ -480,8 +422,6 @@ const NoteList = ({
             ))}
           </section>
 
-          {/* Pagination */}
-
           {variant === "grid" && (
             <Pagination
               currentPage={currentPage}
@@ -491,8 +431,6 @@ const NoteList = ({
           )}
         </>
       )}
-
-      {/* Delete Confirmation */}
 
       <ConfirmationModal
         isOpen={noteToDelete !== null}
@@ -517,8 +455,6 @@ const NoteList = ({
         isLoading={isDeleting}
         danger
       />
-
-      {/* Restore Confirmation */}
 
       <ConfirmationModal
         isOpen={noteToRestore !== null}

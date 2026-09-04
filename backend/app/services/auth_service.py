@@ -11,6 +11,11 @@ from app.auth.security import (
 from app.models import RevokedToken, User
 from app.repositories import auth_repository
 from app.schemas.auth import UserCreate, UserUpdate
+from app.exceptions import (
+    ConflictException,
+    UnauthorizedException,
+    BadRequestException,
+)
 
 
 def create_user(
@@ -24,7 +29,7 @@ def create_user(
     )
 
     if existing_user:
-        raise ValueError("Email already registered")
+        raise ConflictException("Email already registered")
 
     hashed_password = hash_password(
         user_data.password
@@ -91,7 +96,7 @@ def revoke_token(
     exp = payload.get("exp")
 
     if jti is None or exp is None:
-        raise ValueError("Invalid token")
+        raise BadRequestException("Invalid token")
 
     revoked_token = RevokedToken(
         jti=jti,

@@ -6,6 +6,10 @@ from datetime import datetime, timezone
 from app.models import Note
 from app.schemas.note import NoteCreate, NoteUpdate
 from app.repositories import note_repository
+from app.exceptions import (
+    NotFoundException,
+    BadRequestException,
+)
 
 
 def create_note(
@@ -28,7 +32,7 @@ def create_note(
         )
 
         if len(tags) != len(set(note_data.tag_ids)):
-            raise ValueError(
+            raise BadRequestException(
                 "One or more tags do not exist"
             )
 
@@ -102,12 +106,12 @@ def update_note(
     )
 
     if note is None:
-        raise ValueError(
+        raise NotFoundException(
             "Note not found"
         )
 
     if note.is_deleted:
-        raise ValueError(
+        raise BadRequestException(
             "This note is in Trash. Restore it before editing."
         )
 
@@ -133,7 +137,7 @@ def update_note(
             if len(tags) != len(
                 set(note_data.tag_ids)
             ):
-                raise ValueError(
+                raise BadRequestException(
                     "One or more tags do not exist"
                 )
 
@@ -173,12 +177,12 @@ def soft_delete_note(
     )
 
     if note is None:
-        raise ValueError(
+        raise NotFoundException(
             "Note not found"
         )
 
     if note.is_deleted:
-        raise ValueError(
+        raise BadRequestException(
             "This note is already in Trash"
         )
 
@@ -203,12 +207,12 @@ def restore_note(
     )
 
     if note is None:
-        raise ValueError(
+        raise NotFoundException(
             "Note not found"
         )
 
     if not note.is_deleted:
-        raise ValueError(
+        raise BadRequestException(
             "This note is not in Trash"
         )
 
@@ -233,12 +237,12 @@ def hard_delete_note(
     )
 
     if note is None:
-        raise ValueError(
+        raise NotFoundException(
             "Note not found"
         )
 
     if not note.is_deleted:
-        raise ValueError(
+        raise BadRequestException(
             "Move the note to Trash before permanently deleting it"
         )
 

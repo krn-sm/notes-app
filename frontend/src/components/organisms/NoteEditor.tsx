@@ -35,17 +35,11 @@ type Tag = {
 
 type NoteEditorProps = {
   note?: Note;
-
   isNew?: boolean;
-
   onClose: () => void;
-
   onDirtyChange?: (isDirty: boolean) => void;
-
   onNoteCreated?: (note: Note) => void;
-
   onNoteUpdated?: (note: Note) => void;
-
   onNoteDeleted?: (noteId: number) => void;
 };
 
@@ -59,48 +53,19 @@ const NoteEditor = ({
   onNoteDeleted,
 }: NoteEditorProps) => {
   const { showToast } = useToast();
-
   const { tags: allTags, refreshTags } = useTags();
 
   const [title, setTitle] = useState(note?.title ?? "");
-
   const [content, setContent] = useState(note?.content ?? "");
-
   const [tags, setTags] = useState<Tag[]>(
     note?.tags.map((tag) => ({
       id: tag.id,
       name: tag.name,
     })) ?? [],
   );
-
-  const [isDirty, setIsDirty] = useState(isNew);
-
-  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-  const markAsDirty = () => {
-    if (!isDirty) {
-      setIsDirty(true);
-
-      onDirtyChange?.(true);
-    }
-  };
-
-  const markAsClean = () => {
-    setIsDirty(false);
-
-    onDirtyChange?.(false);
-  };
   const [tagInput, setTagInput] = useState("");
 
   const [isEditing, setIsEditing] = useState(isNew);
-
-  const [isSaving, setIsSaving] = useState(false);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const [isCopied, setIsCopied] = useState(false);
-
   const [formatState, setFormatState] = useState<EditorFormatState>({
     bold: false,
     italic: false,
@@ -109,7 +74,28 @@ const NoteEditor = ({
     orderedList: false,
   });
 
+  const [isDirty, setIsDirty] = useState(isNew);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const editorRef = useRef<EditorContentHandle>(null);
+
+  const markAsDirty = () => {
+    if (!isDirty) {
+      setIsDirty(true);
+      onDirtyChange?.(true);
+    }
+  };
+
+  const markAsClean = () => {
+    setIsDirty(false);
+    onDirtyChange?.(false);
+  };
 
   const formattedDate = note
     ? new Date(note.updated_at).toLocaleString("en-US", {
@@ -123,17 +109,13 @@ const NoteEditor = ({
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
-
     setIsEditing(true);
-
     markAsDirty();
   };
 
   const handleContentChange = (value: string) => {
     setContent(value);
-
     setIsEditing(true);
-
     markAsDirty();
   };
 
@@ -150,14 +132,8 @@ const NoteEditor = ({
 
     if (selectedTag) {
       setTagInput("");
-
       return;
     }
-
-    /*
-     * Check whether this tag already exists
-     * globally.
-     */
 
     const existingTag = allTags.find(
       (tag) => tag.name.toLowerCase() === trimmedTag.toLowerCase(),
@@ -173,29 +149,18 @@ const NoteEditor = ({
       ]);
 
       setTagInput("");
-
       setIsEditing(true);
       markAsDirty();
       return;
     }
 
-    /*
-     * New tag.
-     *
-     * Don't create it in the backend yet.
-     * Give it a temporary negative ID.
-     */
-
     const temporaryTag: Tag = {
       id: -Date.now(),
-
       name: trimmedTag,
     };
 
     setTags((currentTags) => [...currentTags, temporaryTag]);
-
     setTagInput("");
-
     setIsEditing(true);
     markAsDirty();
   };
@@ -208,42 +173,24 @@ const NoteEditor = ({
     }
 
     setTags((currentTags) => [...currentTags, tag]);
-
     setIsEditing(true);
     markAsDirty();
   };
 
   const handleRemoveTag = (tagId: number) => {
     setTags((currentTags) => currentTags.filter((tag) => tag.id !== tagId));
-
     setIsEditing(true);
     markAsDirty();
   };
-
-  /*
-   * Creates any temporary tags
-   * and returns tags with real IDs.
-   */
 
   const resolveTagsBeforeSave = async (): Promise<Tag[]> => {
     const resolvedTags: Tag[] = [];
 
     for (const tag of tags) {
-      /*
-       * Real tag.
-       */
-
       if (tag.id > 0) {
         resolvedTags.push(tag);
-
         continue;
       }
-
-      /*
-       * Temporary tag.
-       *
-       * Create it only now.
-       */
 
       const createdTag = await createTag({
         name: tag.name,
@@ -259,30 +206,21 @@ const NoteEditor = ({
     try {
       setIsSaving(true);
 
-
       const resolvedTags = await resolveTagsBeforeSave();
-
       const tagIds = resolvedTags.map((tag) => tag.id);
 
       if (isNew) {
         const createdNote = await createNote({
           title: title.trim() || "Untitled Note",
-
           content,
-
           tag_ids: tagIds,
         });
 
         setTags(resolvedTags);
-
         await refreshTags();
-
         onNoteCreated?.(createdNote);
-
         setIsEditing(false);
-
         markAsClean();
-
         return;
       }
 
@@ -293,22 +231,16 @@ const NoteEditor = ({
       const updatedNote = await updateNote(note.id, {
         title,
         content,
-
         tag_ids: tagIds,
       });
 
       setTags(resolvedTags);
-
       await refreshTags();
-
       onNoteUpdated?.(updatedNote);
-
       setIsEditing(false);
-
       markAsClean();
     } catch (error) {
       console.error("Failed to save note:", error);
-
       showToast(
         error instanceof Error ? error.message : "Failed to save note",
         "error",
@@ -320,13 +252,11 @@ const NoteEditor = ({
 
   const handleUndo = () => {
     editorRef.current?.focus();
-
     document.execCommand("undo");
   };
 
   const handleRedo = () => {
     editorRef.current?.focus();
-
     document.execCommand("redo");
   };
 
@@ -337,7 +267,6 @@ const NoteEditor = ({
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(`${title}\n\n${content}`);
-
       setIsCopied(true);
 
       setTimeout(() => {
@@ -345,7 +274,6 @@ const NoteEditor = ({
       }, 2000);
     } catch (error) {
       console.error("Failed to copy note:", error);
-
       showToast("Failed to copy note", "error");
     }
   };
@@ -361,21 +289,14 @@ const NoteEditor = ({
 
     try {
       setIsDeleting(true);
-
       await deleteNote(note.id);
-
       await refreshTags();
-
       setIsDeleteModalOpen(false);
-
       onNoteDeleted?.(note.id);
-
       onClose();
-
       showToast("Note moved to trash", "success");
     } catch (error) {
       console.error("Failed to delete note:", error);
-
       showToast(
         error instanceof Error ? error.message : "Failed to delete note",
         "error",
@@ -403,8 +324,6 @@ const NoteEditor = ({
           md:shadow-lg
         "
       >
-        {/* Toolbar */}
-
         <header
           className="
             flex
@@ -426,7 +345,6 @@ const NoteEditor = ({
             onClick={() => {
               if (isDirty) {
                 setIsDiscardModalOpen(true);
-
                 return;
               }
 
@@ -487,8 +405,6 @@ const NoteEditor = ({
           </div>
         </header>
 
-        {/* Editor */}
-
         <div
           className="
             flex
@@ -505,8 +421,6 @@ const NoteEditor = ({
             md:py-8
           "
         >
-          {/* Title + Date */}
-
           <div
             className="
               flex
@@ -548,12 +462,9 @@ const NoteEditor = ({
               "
             >
               <CalendarDays size={15} />
-
               <span>{formattedDate}</span>
             </div>
           </div>
-
-          {/* Writing Area */}
 
           <div
             className="
@@ -572,8 +483,6 @@ const NoteEditor = ({
             />
           </div>
 
-          {/* Tags */}
-
           <div
             className="
               shrink-0
@@ -591,15 +500,11 @@ const NoteEditor = ({
             />
           </div>
 
-          {/* Footer */}
-
           <div className="shrink-0">
             <EditorFooter content={content} />
           </div>
         </div>
       </section>
-
-      {/* Delete Confirmation */}
 
       {!isNew && (
         <ConfirmationModal
@@ -614,7 +519,6 @@ const NoteEditor = ({
           danger
         />
       )}
-      {/* Discard Changes Confirmation */}
 
       <ConfirmationModal
         isOpen={isDiscardModalOpen}
@@ -625,9 +529,7 @@ const NoteEditor = ({
         onCancel={() => setIsDiscardModalOpen(false)}
         onConfirm={() => {
           setIsDiscardModalOpen(false);
-
           markAsClean();
-
           onClose();
         }}
         danger

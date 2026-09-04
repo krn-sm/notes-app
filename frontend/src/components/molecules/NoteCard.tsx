@@ -203,12 +203,9 @@ ${
 
             <div
               className="
-                mt-auto
                 flex
                 items-center
-                justify-between
                 gap-3
-                pt-6
               "
             >
               {isDeleted ? (

@@ -1,11 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from app.database import Base, engine
+
 from app.routers.notes import router as notes_router
 from app.routers.tags import router as tags_router
 from app.routers.auth import router as auth_router
+from app.exception_handlers import (
+    register_exception_handlers,
+)
 
 app = FastAPI(title="Memoir API")
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,

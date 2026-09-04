@@ -1,7 +1,6 @@
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
     Query,
     status,
 )
@@ -18,6 +17,7 @@ from app.schemas.note import (
     NoteResponse,
     NoteUpdate,
 )
+from app.schemas.response import ApiResponse
 
 from app.services.note_service import (
     create_note,
@@ -38,7 +38,7 @@ router = APIRouter(
 
 @router.post(
     "",
-    response_model=NoteResponse,
+    response_model=ApiResponse[NoteResponse],
     status_code=status.HTTP_201_CREATED,
 )
 def create_note_endpoint(
@@ -48,23 +48,21 @@ def create_note_endpoint(
     ),
     db: Session = Depends(get_db),
 ):
-    try:
-        return create_note(
-            db,
-            note_data,
-            current_user.id,
-        )
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error),
-        )
+    note = create_note(
+        db,
+        note_data,
+        current_user.id,
+    )
+    return ApiResponse(
+        status_code=201,
+        status_message="Note created successfully",
+        response_data=note,
+    )
 
 
 @router.get(
     "",
-    response_model=PaginatedNotesResponse,
+    response_model=ApiResponse[PaginatedNotesResponse],
 )
 def get_notes_endpoint(
     favorite: bool | None = None,
@@ -88,7 +86,7 @@ def get_notes_endpoint(
     ),
     db: Session = Depends(get_db),
 ):
-    return get_notes(
+    notes = get_notes(
         db=db,
         user_id=current_user.id,
         favorite=favorite,
@@ -98,11 +96,16 @@ def get_notes_endpoint(
         page=page,
         limit=limit,
     )
+    return ApiResponse(
+        status_code=200,
+        status_message="Notes retrieved successfully",
+        response_data=notes,
+    )
 
 
 @router.get(
     "/{note_id}",
-    response_model=NoteResponse,
+    response_model=ApiResponse[NoteResponse],
 )
 def get_note_endpoint(
     note_id: int,
@@ -116,19 +119,16 @@ def get_note_endpoint(
         note_id,
         current_user.id,
     )
-
-    if note is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found",
-        )
-
-    return note
+    return ApiResponse(
+        status_code=200,
+        status_message="Note retrieved successfully",
+        response_data=note,
+    )
 
 
 @router.patch(
     "/{note_id}",
-    response_model=NoteResponse,
+    response_model=ApiResponse[NoteResponse],
 )
 def update_note_endpoint(
     note_id: int,
@@ -138,32 +138,22 @@ def update_note_endpoint(
     ),
     db: Session = Depends(get_db),
 ):
-    try:
-        note = update_note(
-            db,
-            note_id,
-            current_user.id,
-            note_data,
-        )
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error),
-        )
-
-    if note is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found",
-        )
-
-    return note
+    note = update_note(
+        db,
+        note_id,
+        current_user.id,
+        note_data,
+    )
+    return ApiResponse(
+        status_code=200,
+        status_message="Note updated successfully",
+        response_data=note,
+    )
 
 
 @router.delete(
     "/{note_id}",
-    response_model=NoteResponse,
+    response_model=ApiResponse[NoteResponse],
 )
 def soft_delete_note_endpoint(
     note_id: int,
@@ -177,19 +167,16 @@ def soft_delete_note_endpoint(
         note_id,
         current_user.id,
     )
-
-    if note is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found",
-        )
-
-    return note
+    return ApiResponse(
+        status_code=200,
+        status_message="Note moved to trash successfully",
+        response_data=note,
+    )
 
 
 @router.patch(
     "/{note_id}/restore",
-    response_model=NoteResponse,
+    response_model=ApiResponse[NoteResponse],
 )
 def restore_note_endpoint(
     note_id: int,
@@ -203,19 +190,16 @@ def restore_note_endpoint(
         note_id,
         current_user.id,
     )
-
-    if note is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found",
-        )
-
-    return note
+    return ApiResponse(
+        status_code=200,
+        status_message="Note restored successfully",
+        response_data=note,
+    )
 
 
 @router.delete(
     "/{note_id}/permanent",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=ApiResponse[None],
 )
 def hard_delete_note_endpoint(
     note_id: int,
@@ -224,16 +208,13 @@ def hard_delete_note_endpoint(
     ),
     db: Session = Depends(get_db),
 ):
-    deleted = hard_delete_note(
+    hard_delete_note(
         db,
         note_id,
         current_user.id,
     )
-
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found",
-        )
-
-    return None
+    return ApiResponse(
+        status_code=200,
+        status_message="Note permanently deleted successfully",
+        response_data=None,
+    )

@@ -2,12 +2,11 @@ const API_URL =
   import.meta.env.VITE_API_URL ||
   "http://localhost:8000";
 
-type ValidationError = {
-  msg?: string;
-};
-
-type ApiError = {
-  detail?: string | ValidationError[];
+type ApiResponse<T> = {
+  status_code: number;
+  status_message: string;
+  error_message: string | null;
+  response_data: T | null;
 };
 
 const api = async <T>(
@@ -28,34 +27,22 @@ const api = async <T>(
     },
   );
 
+  const json: ApiResponse<T> =
+    await response.json();
+
   if (!response.ok) {
-    const error: ApiError =
-      await response.json().catch(() => ({}));
-
-    if (typeof error.detail === "string") {
-      throw new Error(error.detail);
-    }
-
-    if (
-      Array.isArray(error.detail) &&
-      error.detail.length > 0
-    ) {
-      throw new Error(
-        error.detail[0].msg ||
-          "Something went wrong",
-      );
-    }
-
     throw new Error(
-      "Something went wrong",
+      json.error_message ||
+        json.status_message ||
+        "Something went wrong",
     );
   }
 
-  if (response.status === 204) {
+  if (json.response_data === null) {
     return undefined as T;
   }
 
-  return response.json();
+  return json.response_data;
 };
 
 export default api;

@@ -2,7 +2,6 @@ from fastapi import (
     APIRouter,
     Depends,
     Cookie,
-    HTTPException,
     Response,
     status,
 )
@@ -31,6 +30,8 @@ from app.schemas.auth import (
     UserResponse,
     LoginRequest,
 )
+from app.schemas.response import ApiResponse
+from app.exceptions import UnauthorizedException
 
 
 router = APIRouter(
@@ -41,55 +42,62 @@ router = APIRouter(
 
 @router.post(
     "/register",
-    response_model=UserResponse,
+    response_model=ApiResponse[UserResponse],
     status_code=status.HTTP_201_CREATED,
 )
 def create_user_endpoint(
     user_data: UserCreate,
     db: Session = Depends(get_db),
 ):
-    try:
-        return create_user(
-            db,
-            user_data,
-        )
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error),
-        )
+    user = create_user(
+        db,
+        user_data,
+    )
+    return ApiResponse(
+        status_code=201,
+        status_message="User registered successfully",
+        response_data=user,
+    )
 
 
 @router.get(
     "/me",
-    response_model=UserResponse,
+    response_model=ApiResponse[UserResponse],
 )
 def get_current_user_endpoint(
     current_user: User = Depends(get_current_user),
 ):
-    return current_user
+    return ApiResponse(
+        status_code=200,
+        status_message="User retrieved successfully",
+        response_data=current_user,
+    )
 
 
 @router.patch(
     "/me",
-    response_model=UserResponse,
+    response_model=ApiResponse[UserResponse],
 )
 def update_user_endpoint(
     user_data: UserUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return update_user(
+    user = update_user(
         db,
         current_user,
         user_data,
+    )
+    return ApiResponse(
+        status_code=200,
+        status_message="User updated successfully",
+        response_data=user,
     )
 
 
 @router.post(
     "/login",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=ApiResponse[None],
 )
 def login_user_endpoint(
     response: Response,
@@ -103,9 +111,8 @@ def login_user_endpoint(
     )
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+        raise UnauthorizedException(
+            "Invalid email or password"
         )
 
     access_token = create_access_token(
@@ -121,12 +128,16 @@ def login_user_endpoint(
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
-    return None
+    return ApiResponse(
+        status_code=200,
+        status_message="Login successful",
+        response_data=None,
+    )
 
 
 @router.post(
     "/logout",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=ApiResponse[None],
 )
 def logout_user_endpoint(
     response: Response,
@@ -147,4 +158,8 @@ def logout_user_endpoint(
         key="access_token",
     )
 
-    return None
+    return ApiResponse(
+        status_code=200,
+        status_message="Logout successful",
+        response_data=None,
+    )

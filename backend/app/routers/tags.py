@@ -1,7 +1,6 @@
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
     status,
 )
 from sqlalchemy.orm import Session
@@ -15,6 +14,7 @@ from app.schemas.tag import (
     TagUpdate,
     TagWithCountResponse,
 )
+from app.schemas.response import ApiResponse
 from app.services.tag_service import (
     create_tag,
     delete_tag,
@@ -31,7 +31,7 @@ router = APIRouter(
 
 @router.post(
     "",
-    response_model=TagResponse,
+    response_model=ApiResponse[TagResponse],
     status_code=status.HTTP_201_CREATED,
 )
 def create_tag_endpoint(
@@ -39,37 +39,40 @@ def create_tag_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    try:
-        return create_tag(
-            db,
-            tag_data,
-            current_user.id,
-        )
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error),
-        )
+    tag = create_tag(
+        db,
+        tag_data,
+        current_user.id,
+    )
+    return ApiResponse(
+        status_code=201,
+        status_message="Tag created successfully",
+        response_data=tag,
+    )
 
 
 @router.get(
     "",
-    response_model=list[TagWithCountResponse],
+    response_model=ApiResponse[list[TagWithCountResponse]],
 )
 def get_tags_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return get_tags(
+    tags = get_tags(
         db,
         current_user.id,
+    )
+    return ApiResponse(
+        status_code=200,
+        status_message="Tags retrieved successfully",
+        response_data=tags,
     )
 
 
 @router.patch(
     "/{tag_id}",
-    response_model=TagResponse,
+    response_model=ApiResponse[TagResponse],
 )
 def update_tag_endpoint(
     tag_id: int,
@@ -77,48 +80,35 @@ def update_tag_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    try:
-        tag = update_tag(
-            db,
-            tag_id,
-            tag_data,
-            current_user.id,
-        )
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error),
-        )
-
-    if tag is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tag not found",
-        )
-
-    return tag
+    tag = update_tag(
+        db,
+        tag_id,
+        tag_data,
+        current_user.id,
+    )
+    return ApiResponse(
+        status_code=200,
+        status_message="Tag updated successfully",
+        response_data=tag,
+    )
 
 
 @router.delete(
     "/{tag_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=ApiResponse[None],
 )
 def delete_tag_endpoint(
     tag_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    deleted = delete_tag(
+    delete_tag(
         db,
         tag_id,
         current_user.id,
     )
-
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tag not found",
-        )
-
-    return None
+    return ApiResponse(
+        status_code=200,
+        status_message="Tag deleted successfully",
+        response_data=None,
+    )

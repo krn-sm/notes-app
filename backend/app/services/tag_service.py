@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from app.models import Tag
 from app.schemas.tag import TagCreate, TagUpdate
 from app.repositories import tag_repository
+from app.exceptions import (
+    NotFoundException,
+    ConflictException,
+)
 
 
 def create_tag(
@@ -20,7 +24,7 @@ def create_tag(
     )
 
     if existing_tag:
-        raise ValueError(
+        raise ConflictException(
             "Tag already exists"
         )
 
@@ -83,7 +87,7 @@ def update_tag(
         existing_tag
         and existing_tag.id != tag_id
     ):
-        raise ValueError(
+        raise ConflictException(
             "Tag with this name already exists"
         )
 
